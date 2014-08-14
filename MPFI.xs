@@ -1,3 +1,10 @@
+
+#ifdef  __MINGW32__
+#ifndef __USE_MINGW_ANSI_STDIO
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+#endif
+
 #define PERL_NO_GET_CONTEXT 1
 
 #include "EXTERN.h"
@@ -187,39 +194,39 @@ void Rmpfi_clear(pTHX_ mpfi_t * p) {
 Assignment Functions
 *******************************/
 
-SV * Rmpfi_set (pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_set(*rop, *op));
+int Rmpfi_set (mpfi_t * rop, mpfi_t * op) {
+    return mpfi_set(*rop, *op);
 }
 
-SV * Rmpfi_set_ui (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_set_ui(*rop, SvUV(op)));
+int Rmpfi_set_ui (mpfi_t * rop, unsigned long op) {
+    return mpfi_set_ui(*rop, op);
 }
 
-SV * Rmpfi_set_si (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_set_si(*rop, SvIV(op)));
+int Rmpfi_set_si (mpfi_t * rop, long op) {
+    return mpfi_set_si(*rop, op);
 }
 
-SV * Rmpfi_set_d (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_set_d(*rop, SvNV(op)));
+int Rmpfi_set_d (pTHX_ mpfi_t * rop, SV * op) {
+    return mpfi_set_d(*rop, (double)SvNV(op));
 }
 
-SV * Rmpfi_set_z (pTHX_ mpfi_t * rop, mpz_t * op) {
-     return newSViv(mpfi_set_z(*rop, *op));
+int Rmpfi_set_z (mpfi_t * rop, mpz_t * op) {
+    return mpfi_set_z(*rop, *op);
 }
 
-SV * Rmpfi_set_q (pTHX_ mpfi_t * rop, mpq_t * op) {
-     return newSViv(mpfi_set_q(*rop, *op));
+int Rmpfi_set_q (mpfi_t * rop, mpq_t * op) {
+     return mpfi_set_q(*rop, *op);
 }
 
-SV * Rmpfi_set_fr (pTHX_ mpfi_t * rop, mpfr_t * op) {
-     return newSViv(mpfi_set_fr(*rop, *op));
+int Rmpfi_set_fr (mpfi_t * rop, mpfr_t * op) {
+    return mpfi_set_fr(*rop, *op);
 }
 
-SV * Rmpfi_set_str (pTHX_ mpfi_t * rop, SV * s, SV * base) {
-     return newSViv(mpfi_set_str(*rop, SvPV_nolen(s), SvIV(base)));
+int Rmpfi_set_str (pTHX_ mpfi_t * rop, SV * s, SV * base) {
+     return mpfi_set_str(*rop, SvPV_nolen(s), SvIV(base));
 }
 
-void Rmpfi_swap (pTHX_ mpfi_t * x, mpfi_t * y) {
+void Rmpfi_swap (mpfi_t * x, mpfi_t * y) {
      mpfi_swap(*x, *y);
 }
 
@@ -544,31 +551,31 @@ void Rmpfi_init_set_str_nobless(pTHX_ SV * q, SV * base) {
 Interval Functions with Floating-point Results
 *******************************/
 
-SV * Rmpfi_diam_abs(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_diam_abs(*rop, *op));
+int Rmpfi_diam_abs(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_diam_abs(*rop, *op);
 }
 
-SV * Rmpfi_diam_rel(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_diam_rel(*rop, *op));
+int Rmpfi_diam_rel(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_diam_rel(*rop, *op);
 }
 
-SV * Rmpfi_diam(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_diam(*rop, *op));
+int Rmpfi_diam(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_diam(*rop, *op);
 }
 
-SV * Rmpfi_mag(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_mag(*rop, *op));
+int Rmpfi_mag(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_mag(*rop, *op);
 }
 
-SV * Rmpfi_mig(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_mig(*rop, *op));
+int Rmpfi_mig(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_mig(*rop, *op);
 }
 
-SV * Rmpfi_mid(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_mid(*rop, *op));
+int Rmpfi_mid(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_mid(*rop, *op);
 }
 
-void Rmpfi_alea(pTHX_ mpfr_t * rop, mpfi_t * op) {
+void Rmpfi_alea(mpfr_t * rop, mpfi_t * op) {
      mpfi_alea(*rop, *op);
 }
 
@@ -576,11 +583,11 @@ void Rmpfi_alea(pTHX_ mpfr_t * rop, mpfi_t * op) {
 Conversion Functions
 *******************************/
 
-SV * Rmpfi_get_d (pTHX_ mpfi_t * op) {
-     return newSVnv(mpfi_get_d(*op));
+double Rmpfi_get_d (mpfi_t * op) {
+       return mpfi_get_d(*op);
 }
 
-void Rmpfi_get_fr(pTHX_ mpfr_t * rop, mpfi_t * op) {
+void Rmpfi_get_fr(mpfr_t * rop, mpfi_t * op) {
      mpfi_get_fr(*rop, *op);
 }
 
@@ -588,375 +595,376 @@ void Rmpfi_get_fr(pTHX_ mpfr_t * rop, mpfi_t * op) {
 Basic Arithmetic Functions
 *******************************/
 
-SV * Rmpfi_add (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_add(*rop, *op1, *op2));
+int Rmpfi_add (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_add(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_add_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_add_d(*rop, *op1, SvNV(op2)));
+int Rmpfi_add_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
+    return mpfi_add_d(*rop, *op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_add_ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_add_ui(*rop, *op1, SvUV(op2)));
+int Rmpfi_add_ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_add_ui(*rop, *op1, op2);
 }
 
-SV * Rmpfi_add_si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_add_si(*rop, *op1, SvIV(op2)));
+int Rmpfi_add_si (mpfi_t * rop, mpfi_t * op1, long op2) {
+    return mpfi_add_si(*rop, *op1, op2);
 }
 
-SV * Rmpfi_add_z (pTHX_ mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_add_z(*rop, *op1, *op2));
+int Rmpfi_add_z (mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
+    return mpfi_add_z(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_add_q (pTHX_ mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_add_q(*rop, *op1, *op2));
+int Rmpfi_add_q (mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
+    return mpfi_add_q(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_add_fr (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_add_fr(*rop, *op1, *op2));
+int Rmpfi_add_fr (mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
+    return mpfi_add_fr(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_sub (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_sub(*rop, *op1, *op2));
+int Rmpfi_sub (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_sub(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_sub_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_sub_d(*rop, *op1, SvNV(op2)));
+int Rmpfi_sub_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
+    return mpfi_sub_d(*rop, *op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_d_sub (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_d_sub(*rop, SvNV(op1), *op2));
+int Rmpfi_d_sub (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
+    return mpfi_d_sub(*rop, (double)SvNV(op1), *op2);
 }
 
-SV * Rmpfi_sub_ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_sub_ui(*rop, *op1, SvUV(op2)));
-}
-SV * Rmpfi_ui_sub (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_ui_sub(*rop, SvUV(op1), *op2));
+int Rmpfi_sub_ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_sub_ui(*rop, *op1, op2);
 }
 
-SV * Rmpfi_sub_si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_sub_si(*rop, *op1, SvIV(op2)));
+int Rmpfi_ui_sub (mpfi_t * rop, unsigned long op1, mpfi_t * op2) {
+    return mpfi_ui_sub(*rop, op1, *op2);
 }
 
-SV * Rmpfi_si_sub (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_si_sub(*rop, SvIV(op1), *op2));
+int Rmpfi_sub_si (mpfi_t * rop, mpfi_t * op1, long op2) {
+    return mpfi_sub_si(*rop, *op1, op2);
 }
 
-SV * Rmpfi_sub_z (pTHX_ mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_sub_z(*rop, *op1, *op2));
+int Rmpfi_si_sub (mpfi_t * rop, long op1, mpfi_t * op2) {
+    return mpfi_si_sub(*rop, op1, *op2);
 }
 
-SV * Rmpfi_z_sub (pTHX_ mpfi_t * rop, mpz_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_z_sub(*rop, *op1, *op2));
+int Rmpfi_sub_z (mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
+    return mpfi_sub_z(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_sub_q (pTHX_ mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_sub_q(*rop, *op1, *op2));
+int Rmpfi_z_sub (mpfi_t * rop, mpz_t * op1, mpfi_t * op2) {
+    return mpfi_z_sub(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_q_sub (pTHX_ mpfi_t * rop, mpq_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_q_sub(*rop, *op1, *op2));
+int Rmpfi_sub_q (mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
+    return mpfi_sub_q(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_sub_fr (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_sub_fr(*rop, *op1, *op2));
+int Rmpfi_q_sub (mpfi_t * rop, mpq_t * op1, mpfi_t * op2) {
+    return mpfi_q_sub(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_fr_sub (pTHX_ mpfi_t * rop, mpfr_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_fr_sub(*rop, *op1, *op2));
+int Rmpfi_sub_fr (mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
+    return mpfi_sub_fr(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_mul (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_mul(*rop, *op1, *op2));
+int Rmpfi_fr_sub (mpfi_t * rop, mpfr_t * op1, mpfi_t * op2) {
+    return mpfi_fr_sub(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_mul_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_d(*rop, *op1, SvNV(op2)));
+int Rmpfi_mul (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_mul(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_mul_ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_ui(*rop, *op1, SvUV(op2)));
+int Rmpfi_mul_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
+    return mpfi_mul_d(*rop, *op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_mul_si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_si(*rop, *op1, SvIV(op2)));
+int Rmpfi_mul_ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_mul_ui(*rop, *op1, op2);
 }
 
-SV * Rmpfi_mul_z (pTHX_ mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_mul_z(*rop, *op1, *op2));
+int Rmpfi_mul_si (mpfi_t * rop, mpfi_t * op1, long op2) {
+    return mpfi_mul_si(*rop, *op1, op2);
 }
 
-SV * Rmpfi_mul_q (pTHX_ mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_mul_q(*rop, *op1, *op2));
+int Rmpfi_mul_z (mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
+    return mpfi_mul_z(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_mul_fr (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_mul_fr(*rop, *op1, *op2));
+int Rmpfi_mul_q (mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
+    return mpfi_mul_q(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_div (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_div(*rop, *op1, *op2));
+int Rmpfi_mul_fr (mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
+    return mpfi_mul_fr(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_div_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_d(*rop, *op1, SvNV(op2)));
+int Rmpfi_div (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_div(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_d_div (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_d_div(*rop, SvNV(op1), *op2));
+int Rmpfi_div_d (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
+    return mpfi_div_d(*rop, *op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_div_ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_ui(*rop, *op1, SvUV(op2)));
+int Rmpfi_d_div (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
+    return mpfi_d_div(*rop, (double)SvNV(op1), *op2);
 }
 
-SV * Rmpfi_ui_div (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_ui_div(*rop, SvUV(op1), *op2));
+int Rmpfi_div_ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_div_ui(*rop, *op1, op2);
 }
 
-SV * Rmpfi_div_si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_si(*rop, *op1, SvIV(op2)));
+int Rmpfi_ui_div (mpfi_t * rop, unsigned long op1, mpfi_t * op2) {
+    return mpfi_ui_div(*rop, op1, *op2);
 }
 
-SV * Rmpfi_si_div (pTHX_ mpfi_t * rop, SV * op1, mpfi_t * op2) {
-     return newSViv(mpfi_si_div(*rop, SvIV(op1), *op2));
+int Rmpfi_div_si (mpfi_t * rop, mpfi_t * op1, long op2) {
+     return mpfi_div_si(*rop, *op1, op2);
 }
 
-SV * Rmpfi_div_z (pTHX_ mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_div_z(*rop, *op1, *op2));
+int Rmpfi_si_div (mpfi_t * rop, long op1, mpfi_t * op2) {
+    return mpfi_si_div(*rop, op1, *op2);
 }
 
-SV * Rmpfi_z_div (pTHX_ mpfi_t * rop, mpz_t * op1, mpfi_t *op2) {
-     return newSViv(mpfi_z_div(*rop, *op1, *op2));
+int Rmpfi_div_z (mpfi_t * rop, mpfi_t * op1, mpz_t * op2) {
+    return mpfi_div_z(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_div_q (pTHX_ mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_div_q(*rop, *op1, *op2));
+int Rmpfi_z_div (mpfi_t * rop, mpz_t * op1, mpfi_t *op2) {
+    return mpfi_z_div(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_q_div (pTHX_ mpfi_t * rop, mpq_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_q_div(*rop, *op1, *op2));
+int Rmpfi_div_q (mpfi_t * rop, mpfi_t * op1, mpq_t * op2) {
+    return mpfi_div_q(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_div_fr (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_div_fr(*rop, *op1, *op2));
+int Rmpfi_q_div (mpfi_t * rop, mpq_t * op1, mpfi_t * op2) {
+    return mpfi_q_div(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_fr_div (pTHX_ mpfi_t * rop, mpfr_t *op1, mpfi_t * op2) {
-     return newSViv(mpfi_fr_div(*rop, *op1, *op2));
+int Rmpfi_div_fr (mpfi_t * rop, mpfi_t * op1, mpfr_t * op2) {
+    return mpfi_div_fr(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_neg(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_neg(*rop, *op));
+int Rmpfi_fr_div (mpfi_t * rop, mpfr_t *op1, mpfi_t * op2) {
+     return mpfi_fr_div(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_sqr(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sqr(*rop, *op));
+int Rmpfi_neg(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_neg(*rop, *op);
 }
 
-SV * Rmpfi_inv(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_inv(*rop, *op));
+int Rmpfi_sqr(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sqr(*rop, *op);
 }
 
-SV * Rmpfi_sqrt(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sqrt(*rop, *op));
+int Rmpfi_inv(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_inv(*rop, *op);
 }
 
-SV * Rmpfi_abs(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_abs(*rop, *op));
+int Rmpfi_sqrt(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sqrt(*rop, *op);
 }
 
-SV * Rmpfi_mul_2exp (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_2exp(*rop, *op1, SvUV(op2)));
+int Rmpfi_abs(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_abs(*rop, *op);
 }
 
-SV * Rmpfi_mul_2ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_2ui(*rop, *op1, SvUV(op2)));
+int Rmpfi_mul_2exp (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_mul_2exp(*rop, *op1, op2);
 }
 
-SV * Rmpfi_mul_2si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_mul_2si(*rop, *op1, SvIV(op2)));
+int Rmpfi_mul_2ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_mul_2ui(*rop, *op1, op2);
 }
 
-SV * Rmpfi_div_2exp (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_2exp(*rop, *op1, SvUV(op2)));
+int Rmpfi_mul_2si (mpfi_t * rop, mpfi_t * op1, long op2) {
+    return mpfi_mul_2si(*rop, *op1, op2);
 }
 
-SV * Rmpfi_div_2ui (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_2ui(*rop, *op1, SvUV(op2)));
+int Rmpfi_div_2exp (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_div_2exp(*rop, *op1, op2);
 }
 
-SV * Rmpfi_div_2si (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_div_2si(*rop, *op1, SvIV(op2)));
+int Rmpfi_div_2ui (mpfi_t * rop, mpfi_t * op1, unsigned long op2) {
+    return mpfi_div_2ui(*rop, *op1, op2);
+}
+
+int Rmpfi_div_2si (mpfi_t * rop, mpfi_t * op1, long op2) {
+    return mpfi_div_2si(*rop, *op1, op2);
 }
 
 /*******************************
 Special Functions
 *******************************/
 
-SV * Rmpfi_log(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_log(*rop, *op));
+int Rmpfi_log(mpfi_t * rop, mpfi_t * op) {
+     return mpfi_log(*rop, *op);
 }
 
-SV * Rmpfi_exp(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_exp(*rop, *op));
+int Rmpfi_exp(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_exp(*rop, *op);
 }
 
-SV * Rmpfi_exp2(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_exp2(*rop, *op));
+int Rmpfi_exp2(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_exp2(*rop, *op);
 }
 
-SV * Rmpfi_cos(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_cos(*rop, *op));
+int Rmpfi_cos(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_cos(*rop, *op);
 }
 
-SV * Rmpfi_sin(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sin(*rop, *op));
+int Rmpfi_sin(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sin(*rop, *op);
 }
 
-SV * Rmpfi_tan(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_tan(*rop, *op));
+int Rmpfi_tan(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_tan(*rop, *op);
 }
 
-SV * Rmpfi_acos(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_acos(*rop, *op));
+int Rmpfi_acos(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_acos(*rop, *op);
 }
 
-SV * Rmpfi_asin(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_asin(*rop, *op));
+int Rmpfi_asin(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_asin(*rop, *op);
 }
 
-SV * Rmpfi_atan(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_atan(*rop, *op));
+int Rmpfi_atan(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_atan(*rop, *op);
 }
 
-SV * Rmpfi_cosh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_cosh(*rop, *op));
+int Rmpfi_cosh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_cosh(*rop, *op);
 }
 
-SV * Rmpfi_sinh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sinh(*rop, *op));
+int Rmpfi_sinh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sinh(*rop, *op);
 }
 
-SV * Rmpfi_tanh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_tanh(*rop, *op));
+int Rmpfi_tanh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_tanh(*rop, *op);
 }
 
-SV * Rmpfi_acosh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_acosh(*rop, *op));
+int Rmpfi_acosh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_acosh(*rop, *op);
 }
 
-SV * Rmpfi_asinh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_asinh(*rop, *op));
+int Rmpfi_asinh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_asinh(*rop, *op);
 }
 
-SV * Rmpfi_atanh(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_atanh(*rop, *op));
+int Rmpfi_atanh(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_atanh(*rop, *op);
 }
 
-SV * Rmpfi_log1p(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_log1p(*rop, *op));
+int Rmpfi_log1p(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_log1p(*rop, *op);
 }
 
-SV * Rmpfi_expm1(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_expm1(*rop, *op));
+int Rmpfi_expm1(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_expm1(*rop, *op);
 }
 
-SV * Rmpfi_log2(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_log2(*rop, *op));
+int Rmpfi_log2(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_log2(*rop, *op);
 }
 
-SV * Rmpfi_log10(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_log10(*rop, *op));
+int Rmpfi_log10(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_log10(*rop, *op);
 }
 
-SV * Rmpfi_const_log2(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_const_log2(*op));
+int Rmpfi_const_log2(mpfi_t * op) {
+    return mpfi_const_log2(*op);
 }
 
-SV * Rmpfi_const_pi(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_const_pi(*op));
+int Rmpfi_const_pi(mpfi_t * op) {
+    return mpfi_const_pi(*op);
 }
 
-SV * Rmpfi_const_euler(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_const_euler(*op));
+int Rmpfi_const_euler(mpfi_t * op) {
+    return mpfi_const_euler(*op);
 }
 
 /*******************************
 Comparison Functions
 *******************************/
 
-SV * Rmpfi_cmp (pTHX_ mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_cmp(*op1, *op2));
+int Rmpfi_cmp (mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_cmp(*op1, *op2);
 }
 
-SV * Rmpfi_cmp_d (pTHX_ mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_cmp_d(*op1, SvNV(op2)));
+int Rmpfi_cmp_d (pTHX_ mpfi_t * op1, SV * op2) {
+    return mpfi_cmp_d(*op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_cmp_ui (pTHX_ mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_cmp_ui(*op1, SvUV(op2)));
+int Rmpfi_cmp_ui (mpfi_t * op1, unsigned long op2) {
+    return mpfi_cmp_ui(*op1, op2);
 }
 
-SV * Rmpfi_cmp_si (pTHX_ mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_cmp_si(*op1, SvIV(op2)));
+int Rmpfi_cmp_si (mpfi_t * op1, long op2) {
+    return mpfi_cmp_si(*op1, op2);
 }
 
-SV * Rmpfi_cmp_z (pTHX_ mpfi_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_cmp_z(*op1, *op2));
+int Rmpfi_cmp_z (mpfi_t * op1, mpz_t * op2) {
+    return mpfi_cmp_z(*op1, *op2);
 }
 
-SV * Rmpfi_cmp_q (pTHX_ mpfi_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_cmp_q(*op1, *op2));
+int Rmpfi_cmp_q (mpfi_t * op1, mpq_t * op2) {
+    return mpfi_cmp_q(*op1, *op2);
 }
 
-SV * Rmpfi_cmp_fr (pTHX_ mpfi_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_cmp_fr(*op1, *op2));
+int Rmpfi_cmp_fr (mpfi_t * op1, mpfr_t * op2) {
+    return mpfi_cmp_fr(*op1, *op2);
 }
 
-SV * Rmpfi_is_pos(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_pos(*op));
+int Rmpfi_is_pos(mpfi_t * op) {
+    return mpfi_is_pos(*op);
 }
 
-SV * Rmpfi_is_strictly_pos(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_strictly_pos(*op));
+int Rmpfi_is_strictly_pos(mpfi_t * op) {
+    return mpfi_is_strictly_pos(*op);
 }
 
-SV * Rmpfi_is_nonneg(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_nonneg(*op));
+int Rmpfi_is_nonneg(mpfi_t * op) {
+    return mpfi_is_nonneg(*op);
 }
 
-SV * Rmpfi_is_neg(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_neg(*op));
+int Rmpfi_is_neg(mpfi_t * op) {
+    return mpfi_is_neg(*op);
 }
 
-SV * Rmpfi_is_strictly_neg(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_strictly_neg(*op));
+int Rmpfi_is_strictly_neg(mpfi_t * op) {
+    return mpfi_is_strictly_neg(*op);
 }
 
-SV * Rmpfi_is_nonpos(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_nonpos(*op));
+int Rmpfi_is_nonpos(mpfi_t * op) {
+    return mpfi_is_nonpos(*op);
 }
 
-SV * Rmpfi_is_zero(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_zero(*op));
+int Rmpfi_is_zero(mpfi_t * op) {
+    return mpfi_is_zero(*op);
 }
 
-SV * Rmpfi_has_zero(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_has_zero(*op));
+int Rmpfi_has_zero(mpfi_t * op) {
+    return mpfi_has_zero(*op);
 }
 
-SV * Rmpfi_nan_p(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_nan_p(*op));
+int Rmpfi_nan_p(mpfi_t * op) {
+    return mpfi_nan_p(*op);
 }
 
-SV * Rmpfi_inf_p(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_inf_p(*op));
+int Rmpfi_inf_p(mpfi_t * op) {
+    return mpfi_inf_p(*op);
 }
 
-SV * Rmpfi_bounded_p(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_bounded_p(*op));
+int Rmpfi_bounded_p(mpfi_t * op) {
+    return mpfi_bounded_p(*op);
 }
 
 /*******************************
@@ -1010,7 +1018,7 @@ SV * Rmpfi_inp_str(pTHX_ mpfi_t * p, FILE * stream, SV * base) {
      return newSVuv(ret);
 }
 
-void Rmpfi_print_binary(pTHX_ mpfi_t * op) {
+void Rmpfi_print_binary(mpfi_t * op) {
      mpfi_print_binary(*op);
 }
 
@@ -1018,132 +1026,132 @@ void Rmpfi_print_binary(pTHX_ mpfi_t * op) {
 Functions Operating on Endpoints
 *******************************/
 
-SV * Rmpfi_get_left(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_get_left(*rop, *op));
+int Rmpfi_get_left(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_get_left(*rop, *op);
 }
 
-SV * Rmpfi_get_right(pTHX_ mpfr_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_get_right(*rop, *op));
+int Rmpfi_get_right(mpfr_t * rop, mpfi_t * op) {
+    return mpfi_get_right(*rop, *op);
 }
 
-SV * Rmpfi_revert_if_needed(pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_revert_if_needed(*op));
+int Rmpfi_revert_if_needed(mpfi_t * op) {
+    return mpfi_revert_if_needed(*op);
 }
 
-SV * Rmpfi_put (pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_put(*rop, *op));
+int Rmpfi_put (mpfi_t * rop, mpfi_t * op) {
+    return mpfi_put(*rop, *op);
 }
 
-SV * Rmpfi_put_d (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_put_d(*rop, SvNV(op)));
+int Rmpfi_put_d (pTHX_ mpfi_t * rop, SV * op) {
+    return mpfi_put_d(*rop, (double)SvNV(op));
 }
 
-SV * Rmpfi_put_ui (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_put_ui(*rop, SvUV(op)));
+int Rmpfi_put_ui (mpfi_t * rop, unsigned long op) {
+    return mpfi_put_ui(*rop, op);
 }
 
-SV * Rmpfi_put_si (pTHX_ mpfi_t * rop, SV * op) {
-     return newSViv(mpfi_put_si(*rop, SvIV(op)));
+int Rmpfi_put_si (mpfi_t * rop, long op) {
+    return mpfi_put_si(*rop, op);
 }
 
-SV * Rmpfi_put_z (pTHX_ mpfi_t * rop, mpz_t * op) {
-     return newSViv(mpfi_put_z(*rop, *op));
+int Rmpfi_put_z (mpfi_t * rop, mpz_t * op) {
+    return mpfi_put_z(*rop, *op);
 }
 
-SV * Rmpfi_put_q (pTHX_ mpfi_t * rop, mpq_t * op) {
-     return newSViv(mpfi_put_q(*rop, *op));
+int Rmpfi_put_q (mpfi_t * rop, mpq_t * op) {
+    return mpfi_put_q(*rop, *op);
 }
 
-SV * Rmpfi_put_fr (pTHX_ mpfi_t * rop, mpfr_t * op) {
-     return newSViv(mpfi_put_fr(*rop, *op));
+int Rmpfi_put_fr (mpfi_t * rop, mpfr_t * op) {
+    return mpfi_put_fr(*rop, *op);
 }
 
-SV * Rmpfi_interv_d (pTHX_ mpfi_t * rop, SV * op1, SV * op2) {
-     return newSViv(mpfi_interv_d(*rop, SvNV(op1), SvNV(op2)));
+int Rmpfi_interv_d (pTHX_ mpfi_t * rop, SV * op1, SV * op2) {
+    return mpfi_interv_d(*rop, (double)SvNV(op1), (double)SvNV(op2));
 }
 
-SV * Rmpfi_interv_ui (pTHX_ mpfi_t * rop, SV * op1, SV * op2) {
-     return newSViv(mpfi_interv_ui(*rop, SvUV(op1), SvUV(op2)));
+int Rmpfi_interv_ui (mpfi_t * rop, unsigned long op1, unsigned long op2) {
+    return mpfi_interv_ui(*rop, op1, op2);
 }
 
-SV * Rmpfi_interv_si (pTHX_ mpfi_t * rop, SV * op1, SV * op2) {
-     return newSViv(mpfi_interv_si(*rop, SvIV(op1), SvIV(op2)));
+int Rmpfi_interv_si (mpfi_t * rop, long op1, long op2) {
+     return mpfi_interv_si(*rop, op1, op2);
 }
 
-SV * Rmpfi_interv_z (pTHX_ mpfi_t * rop, mpz_t * op1, mpz_t * op2) {
-     return newSViv(mpfi_interv_z(*rop, *op1, *op2));
+int Rmpfi_interv_z (mpfi_t * rop, mpz_t * op1, mpz_t * op2) {
+    return mpfi_interv_z(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_interv_q (pTHX_ mpfi_t * rop, mpq_t * op1, mpq_t * op2) {
-     return newSViv(mpfi_interv_q(*rop, *op1, *op2));
+int Rmpfi_interv_q (mpfi_t * rop, mpq_t * op1, mpq_t * op2) {
+    return mpfi_interv_q(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_interv_fr (pTHX_ mpfi_t * rop, mpfr_t * op1, mpfr_t * op2) {
-     return newSViv(mpfi_interv_fr(*rop, *op1, *op2));
+int Rmpfi_interv_fr (mpfi_t * rop, mpfr_t * op1, mpfr_t * op2) {
+    return mpfi_interv_fr(*rop, *op1, *op2);
 }
 
 /*******************************
 Set Functions on Intervals
 *******************************/
 
-SV * Rmpfi_is_strictly_inside (pTHX_ mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_is_strictly_inside(*op1, *op2));
+int Rmpfi_is_strictly_inside (mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_is_strictly_inside(*op1, *op2);
 }
 
-SV * Rmpfi_is_inside (pTHX_ mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_is_inside(*op1, *op2));
+int Rmpfi_is_inside (mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_is_inside(*op1, *op2);
 }
 
-SV * Rmpfi_is_inside_d (pTHX_ SV * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_d(SvNV(op2), *op1));
+int Rmpfi_is_inside_d (pTHX_ SV * op2, mpfi_t * op1) {
+    return mpfi_is_inside_d((double)SvNV(op2), *op1);
 }
 
-SV * Rmpfi_is_inside_ui (pTHX_ SV * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_ui(SvUV(op2), *op1));
+int Rmpfi_is_inside_ui (unsigned long op2, mpfi_t * op1) {
+    return mpfi_is_inside_ui(op2, *op1);
 }
 
-SV * Rmpfi_is_inside_si (pTHX_ SV * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_si(SvIV(op2), *op1));
+int Rmpfi_is_inside_si (long op2, mpfi_t * op1) {
+    return mpfi_is_inside_si(op2, *op1);
 }
 
-SV * Rmpfi_is_inside_z (pTHX_ mpz_t * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_z(*op2, *op1));
+int Rmpfi_is_inside_z (mpz_t * op2, mpfi_t * op1) {
+    return mpfi_is_inside_z(*op2, *op1);
 }
 
-SV * Rmpfi_is_inside_q (pTHX_ mpq_t * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_q(*op2, *op1));
+int Rmpfi_is_inside_q (mpq_t * op2, mpfi_t * op1) {
+    return mpfi_is_inside_q(*op2, *op1);
 }
 
-SV * Rmpfi_is_inside_fr (pTHX_ mpfr_t * op2, mpfi_t * op1) {
-     return newSViv(mpfi_is_inside_fr(*op2, *op1));
+int Rmpfi_is_inside_fr (mpfr_t * op2, mpfi_t * op1) {
+    return mpfi_is_inside_fr(*op2, *op1);
 }
 
-SV * Rmpfi_is_empty (pTHX_ mpfi_t * op) {
-     return newSViv(mpfi_is_empty(*op));
+int Rmpfi_is_empty (mpfi_t * op) {
+    return mpfi_is_empty(*op);
 }
 
-SV * Rmpfi_intersect (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_intersect(*rop, *op1, *op2));
+int Rmpfi_intersect (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_intersect(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_union (pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_union(*rop, *op1, *op2));
+int Rmpfi_union (mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+     return mpfi_union(*rop, *op1, *op2);
 }
 
 /*******************************
 Miscellaneous Interval Functions
 *******************************/
 
-SV * Rmpfi_increase (pTHX_ mpfi_t * rop, mpfr_t * op) {
-     return newSViv(mpfi_increase(*rop, *op));
+int Rmpfi_increase (mpfi_t * rop, mpfr_t * op) {
+    return mpfi_increase(*rop, *op);
 }
 
-SV * Rmpfi_blow (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
-     return newSViv(mpfi_blow(*rop, *op1, SvNV(op2)));
+int Rmpfi_blow (pTHX_ mpfi_t * rop, mpfi_t * op1, SV * op2) {
+    return mpfi_blow(*rop, *op1, (double)SvNV(op2));
 }
 
-SV * Rmpfi_bisect (pTHX_ mpfi_t * rop1, mpfi_t * rop2, mpfi_t * op) {
-     return newSViv(mpfi_bisect(*rop1, *rop2, *op));
+int Rmpfi_bisect (mpfi_t * rop1, mpfi_t * rop2, mpfi_t * op) {
+    return mpfi_bisect(*rop1, *rop2, *op);
 }
 
 /*******************************
@@ -1154,12 +1162,12 @@ void RMPFI_ERROR (pTHX_ SV * msg) {
      MPFI_ERROR(SvPV_nolen(msg));
 }
 
-SV * Rmpfi_is_error(pTHX) {
-     return newSViv(mpfi_is_error());
+int Rmpfi_is_error(void) {
+    return mpfi_is_error();
 }
 
-void Rmpfi_set_error(pTHX_ SV * op) {
-     mpfi_set_error(SvIV(op));
+void Rmpfi_set_error(int op) {
+     mpfi_set_error(op);
 }
 
 void Rmpfi_reset_error(void) {
@@ -1185,7 +1193,12 @@ SV * _itsa(pTHX_ SV * a) {
 }
 
 SV * gmp_v(pTHX) {
+#if __GNU_MP_VERSION >= 4
      return newSVpv(gmp_version, 0);
+#else
+     warn("From Math::MPFI::gmp_v: 'gmp_version' is not implemented - returning '0'");
+     return newSVpv("0", 0);
+#endif
 }
 
 SV * mpfr_v(pTHX) {
@@ -2211,47 +2224,47 @@ SV * Rmpfi_get_version(pTHX) {
      return newSVpv(mpfi_get_version(), 0);
 }
 
-SV * Rmpfi_const_catalan(pTHX_ mpfi_t * rop) {
-     return newSViv(mpfi_const_catalan(*rop));
+int Rmpfi_const_catalan(mpfi_t * rop) {
+    return mpfi_const_catalan(*rop);
 }
 
-SV * Rmpfi_cbrt(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_cbrt(*rop, *op));
+int Rmpfi_cbrt(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_cbrt(*rop, *op);
 }
 
-SV * Rmpfi_sec(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sec(*rop, *op));
+int Rmpfi_sec(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sec(*rop, *op);
 }
 
-SV * Rmpfi_csc(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_csc(*rop, *op));
+int Rmpfi_csc(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_csc(*rop, *op);
 }
 
-SV * Rmpfi_cot(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_cot(*rop, *op));
+int Rmpfi_cot(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_cot(*rop, *op);
 }
 
-SV * Rmpfi_sech(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_sech(*rop, *op));
+int Rmpfi_sech(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_sech(*rop, *op);
 }
 
-SV * Rmpfi_csch(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_csch(*rop, *op));
+int Rmpfi_csch(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_csch(*rop, *op);
 }
 
-SV * Rmpfi_coth(pTHX_ mpfi_t * rop, mpfi_t * op) {
-     return newSViv(mpfi_coth(*rop, *op));
+int Rmpfi_coth(mpfi_t * rop, mpfi_t * op) {
+    return mpfi_coth(*rop, *op);
 }
 
-SV * Rmpfi_atan2(pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_atan2(*rop, *op1, *op2));
+int Rmpfi_atan2(mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_atan2(*rop, *op1, *op2);
 }
 
-SV * Rmpfi_hypot(pTHX_ mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
-     return newSViv(mpfi_hypot(*rop, *op1, *op2));
+int Rmpfi_hypot(mpfi_t * rop, mpfi_t * op1, mpfi_t * op2) {
+    return mpfi_hypot(*rop, *op1, *op2);
 }
 
-void Rmpfi_urandom(pTHX_ mpfr_t * rop, mpfi_t * op, gmp_randstate_t * state) {
+void Rmpfi_urandom(mpfr_t * rop, mpfi_t * op, gmp_randstate_t * state) {
      mpfi_urandom(*rop, *op, *state);
 }
 
@@ -2503,7 +2516,7 @@ SV * _wrap_count(pTHX) {
 SV * _get_xs_version(pTHX) {
      return newSVpv(XS_VERSION, 0);
 }
-MODULE = Math::MPFI	PACKAGE = Math::MPFI
+MODULE = Math::MPFI  PACKAGE = Math::MPFI
 
 PROTOTYPES: DISABLE
 
@@ -2551,18 +2564,18 @@ OUTPUT:  RETVAL
 void
 _Rmpfi_set_default_prec (p)
 	SV *	p
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	_Rmpfi_set_default_prec(aTHX_ p);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        _Rmpfi_set_default_prec(aTHX_ p);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 SV *
 Rmpfi_get_default_prec ()
@@ -2575,18 +2588,18 @@ void
 Rmpfi_set_prec (op, prec)
 	mpfi_t *	op
 	SV *	prec
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_set_prec(aTHX_ op, prec);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_set_prec(aTHX_ op, prec);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 SV *
 Rmpfi_get_prec (op)
@@ -2634,60 +2647,51 @@ OUTPUT:  RETVAL
 void
 DESTROY (p)
 	mpfi_t *	p
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	DESTROY(aTHX_ p);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        DESTROY(aTHX_ p);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_clear (p)
 	mpfi_t *	p
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_clear(aTHX_ p);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_clear(aTHX_ p);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+int
 Rmpfi_set (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_set (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_set_ui (rop, op)
 	mpfi_t *	rop
-	SV *	op
-CODE:
-  RETVAL = Rmpfi_set_ui (aTHX_ rop, op);
-OUTPUT:  RETVAL
+	unsigned long	op
 
-SV *
+int
 Rmpfi_set_si (rop, op)
 	mpfi_t *	rop
-	SV *	op
-CODE:
-  RETVAL = Rmpfi_set_si (aTHX_ rop, op);
-OUTPUT:  RETVAL
+	long	op
 
-SV *
+int
 Rmpfi_set_d (rop, op)
 	mpfi_t *	rop
 	SV *	op
@@ -2695,31 +2699,22 @@ CODE:
   RETVAL = Rmpfi_set_d (aTHX_ rop, op);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_set_z (rop, op)
 	mpfi_t *	rop
 	mpz_t *	op
-CODE:
-  RETVAL = Rmpfi_set_z (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_set_q (rop, op)
 	mpfi_t *	rop
 	mpq_t *	op
-CODE:
-  RETVAL = Rmpfi_set_q (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_set_fr (rop, op)
 	mpfi_t *	rop
 	mpfr_t *	op
-CODE:
-  RETVAL = Rmpfi_set_fr (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_set_str (rop, s, base)
 	mpfi_t *	rop
 	SV *	s
@@ -2732,376 +2727,352 @@ void
 Rmpfi_swap (x, y)
 	mpfi_t *	x
 	mpfi_t *	y
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_swap(aTHX_ x, y);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_swap(x, y);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set (q)
 	mpfi_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_ui (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_ui(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_ui(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_si (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_si(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_si(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_d (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_d(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_d(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_z (q)
 	mpz_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_z(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_z(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_q (q)
 	mpq_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_q(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_q(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_fr (q)
 	mpfr_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_fr(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_fr(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_str (q, base)
 	SV *	q
 	SV *	base
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_str(aTHX_ q, base);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_str(aTHX_ q, base);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_nobless (q)
 	mpfi_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_ui_nobless (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_ui_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_ui_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_si_nobless (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_si_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_si_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_d_nobless (q)
 	SV *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_d_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_d_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_z_nobless (q)
 	mpz_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_z_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_z_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_q_nobless (q)
 	mpq_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_q_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_q_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_fr_nobless (q)
 	mpfr_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_fr_nobless(aTHX_ q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_fr_nobless(aTHX_ q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_init_set_str_nobless (q, base)
 	SV *	q
 	SV *	base
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_init_set_str_nobless(aTHX_ q, base);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_init_set_str_nobless(aTHX_ q, base);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+int
 Rmpfi_diam_abs (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_diam_abs (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_diam_rel (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_diam_rel (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_diam (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_diam (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mag (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_mag (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mig (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_mig (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mid (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_mid (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
 void
 Rmpfi_alea (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_alea(aTHX_ rop, op);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_alea(rop, op);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+double
 Rmpfi_get_d (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_get_d (aTHX_ op);
-OUTPUT:  RETVAL
 
 void
 Rmpfi_get_fr (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_get_fr(aTHX_ rop, op);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_get_fr(rop, op);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+int
 Rmpfi_add (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_add (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_add_d (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
@@ -3110,61 +3081,43 @@ CODE:
   RETVAL = Rmpfi_add_d (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_add_ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_add_ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_add_si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_add_si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_add_z (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_add_z (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_add_q (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_add_q (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_add_fr (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_add_fr (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_d (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
@@ -3173,7 +3126,7 @@ CODE:
   RETVAL = Rmpfi_sub_d (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_d_sub (rop, op1, op2)
 	mpfi_t *	rop
 	SV *	op1
@@ -3182,106 +3135,73 @@ CODE:
   RETVAL = Rmpfi_d_sub (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_sub_ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_ui_sub (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
+	unsigned long	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_ui_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_sub_si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_si_sub (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
+	long	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_si_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_z (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_sub_z (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_z_sub (rop, op1, op2)
 	mpfi_t *	rop
 	mpz_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_z_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_q (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_sub_q (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_q_sub (rop, op1, op2)
 	mpfi_t *	rop
 	mpq_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_q_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sub_fr (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_sub_fr (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_fr_sub (rop, op1, op2)
 	mpfi_t *	rop
 	mpfr_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_fr_sub (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_mul (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul_d (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
@@ -3290,61 +3210,43 @@ CODE:
   RETVAL = Rmpfi_mul_d (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul_ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_mul_ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_mul_si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_mul_si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_mul_z (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_mul_z (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul_q (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_mul_q (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul_fr (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_mul_fr (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_d (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
@@ -3353,7 +3255,7 @@ CODE:
   RETVAL = Rmpfi_div_d (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_d_div (rop, op1, op2)
 	mpfi_t *	rop
 	SV *	op1
@@ -3362,372 +3264,240 @@ CODE:
   RETVAL = Rmpfi_d_div (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_div_ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_ui_div (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
+	unsigned long	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_ui_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_div_si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_si_div (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
+	long	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_si_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_z (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_div_z (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_z_div (rop, op1, op2)
 	mpfi_t *	rop
 	mpz_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_z_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_q (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_div_q (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_q_div (rop, op1, op2)
 	mpfi_t *	rop
 	mpq_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_q_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_div_fr (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_div_fr (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_fr_div (rop, op1, op2)
 	mpfi_t *	rop
 	mpfr_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_fr_div (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_neg (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_neg (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sqr (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sqr (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_inv (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_inv (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sqrt (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sqrt (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_abs (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_abs (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_mul_2exp (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_mul_2exp (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_mul_2ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_mul_2ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_mul_2si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_mul_2si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_div_2exp (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_div_2exp (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_div_2ui (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_div_2ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_div_2si (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_div_2si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_log (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_log (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_exp (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_exp (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_exp2 (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_exp2 (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cos (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_cos (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sin (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sin (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_tan (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_tan (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_acos (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_acos (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_asin (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_asin (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_atan (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_atan (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cosh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_cosh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sinh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sinh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_tanh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_tanh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_acosh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_acosh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_asinh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_asinh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_atanh (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_atanh (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_log1p (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_log1p (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_expm1 (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_expm1 (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_log2 (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_log2 (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_log10 (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_log10 (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_const_log2 (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_const_log2 (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_const_pi (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_const_pi (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_const_euler (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_const_euler (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cmp (op1, op2)
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_cmp (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cmp_d (op1, op2)
 	mpfi_t *	op1
 	SV *	op2
@@ -3735,122 +3505,74 @@ CODE:
   RETVAL = Rmpfi_cmp_d (aTHX_ op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cmp_ui (op1, op2)
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_cmp_ui (aTHX_ op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_cmp_si (op1, op2)
 	mpfi_t *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_cmp_si (aTHX_ op1, op2);
-OUTPUT:  RETVAL
+	long	op2
 
-SV *
+int
 Rmpfi_cmp_z (op1, op2)
 	mpfi_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_cmp_z (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cmp_q (op1, op2)
 	mpfi_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_cmp_q (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cmp_fr (op1, op2)
 	mpfi_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_cmp_fr (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_pos (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_pos (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_strictly_pos (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_strictly_pos (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_nonneg (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_nonneg (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_neg (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_neg (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_strictly_neg (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_strictly_neg (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_nonpos (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_nonpos (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_zero (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_zero (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_has_zero (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_has_zero (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_nan_p (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_nan_p (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_inf_p (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_inf_p (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_bounded_p (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_bounded_p (aTHX_ op);
-OUTPUT:  RETVAL
 
 SV *
 _Rmpfi_out_str (stream, base, dig, p)
@@ -3908,51 +3630,39 @@ OUTPUT:  RETVAL
 void
 Rmpfi_print_binary (op)
 	mpfi_t *	op
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_print_binary(aTHX_ op);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_print_binary(op);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+int
 Rmpfi_get_left (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_get_left (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_get_right (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_get_right (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_revert_if_needed (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_revert_if_needed (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_put (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_put (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_put_d (rop, op)
 	mpfi_t *	rop
 	SV *	op
@@ -3960,47 +3670,32 @@ CODE:
   RETVAL = Rmpfi_put_d (aTHX_ rop, op);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_put_ui (rop, op)
 	mpfi_t *	rop
-	SV *	op
-CODE:
-  RETVAL = Rmpfi_put_ui (aTHX_ rop, op);
-OUTPUT:  RETVAL
+	unsigned long	op
 
-SV *
+int
 Rmpfi_put_si (rop, op)
 	mpfi_t *	rop
-	SV *	op
-CODE:
-  RETVAL = Rmpfi_put_si (aTHX_ rop, op);
-OUTPUT:  RETVAL
+	long	op
 
-SV *
+int
 Rmpfi_put_z (rop, op)
 	mpfi_t *	rop
 	mpz_t *	op
-CODE:
-  RETVAL = Rmpfi_put_z (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_put_q (rop, op)
 	mpfi_t *	rop
 	mpq_t *	op
-CODE:
-  RETVAL = Rmpfi_put_q (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_put_fr (rop, op)
 	mpfi_t *	rop
 	mpfr_t *	op
-CODE:
-  RETVAL = Rmpfi_put_fr (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_interv_d (rop, op1, op2)
 	mpfi_t *	rop
 	SV *	op1
@@ -4009,68 +3704,47 @@ CODE:
   RETVAL = Rmpfi_interv_d (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_interv_ui (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_interv_ui (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	unsigned long	op1
+	unsigned long	op2
 
-SV *
+int
 Rmpfi_interv_si (rop, op1, op2)
 	mpfi_t *	rop
-	SV *	op1
-	SV *	op2
-CODE:
-  RETVAL = Rmpfi_interv_si (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
+	long	op1
+	long	op2
 
-SV *
+int
 Rmpfi_interv_z (rop, op1, op2)
 	mpfi_t *	rop
 	mpz_t *	op1
 	mpz_t *	op2
-CODE:
-  RETVAL = Rmpfi_interv_z (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_interv_q (rop, op1, op2)
 	mpfi_t *	rop
 	mpq_t *	op1
 	mpq_t *	op2
-CODE:
-  RETVAL = Rmpfi_interv_q (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_interv_fr (rop, op1, op2)
 	mpfi_t *	rop
 	mpfr_t *	op1
 	mpfr_t *	op2
-CODE:
-  RETVAL = Rmpfi_interv_fr (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_strictly_inside (op1, op2)
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_is_strictly_inside (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside (op1, op2)
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_is_inside (aTHX_ op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_d (op2, op1)
 	SV *	op2
 	mpfi_t *	op1
@@ -4078,80 +3752,53 @@ CODE:
   RETVAL = Rmpfi_is_inside_d (aTHX_ op2, op1);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_ui (op2, op1)
-	SV *	op2
+	unsigned long	op2
 	mpfi_t *	op1
-CODE:
-  RETVAL = Rmpfi_is_inside_ui (aTHX_ op2, op1);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_si (op2, op1)
-	SV *	op2
+	long	op2
 	mpfi_t *	op1
-CODE:
-  RETVAL = Rmpfi_is_inside_si (aTHX_ op2, op1);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_z (op2, op1)
 	mpz_t *	op2
 	mpfi_t *	op1
-CODE:
-  RETVAL = Rmpfi_is_inside_z (aTHX_ op2, op1);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_q (op2, op1)
 	mpq_t *	op2
 	mpfi_t *	op1
-CODE:
-  RETVAL = Rmpfi_is_inside_q (aTHX_ op2, op1);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_inside_fr (op2, op1)
 	mpfr_t *	op2
 	mpfi_t *	op1
-CODE:
-  RETVAL = Rmpfi_is_inside_fr (aTHX_ op2, op1);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_is_empty (op)
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_is_empty (aTHX_ op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_intersect (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_intersect (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_union (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_union (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_increase (rop, op)
 	mpfi_t *	rop
 	mpfr_t *	op
-CODE:
-  RETVAL = Rmpfi_increase (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_blow (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
@@ -4160,69 +3807,63 @@ CODE:
   RETVAL = Rmpfi_blow (aTHX_ rop, op1, op2);
 OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_bisect (rop1, rop2, op)
 	mpfi_t *	rop1
 	mpfi_t *	rop2
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_bisect (aTHX_ rop1, rop2, op);
-OUTPUT:  RETVAL
 
 void
 RMPFI_ERROR (msg)
 	SV *	msg
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	RMPFI_ERROR(aTHX_ msg);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        RMPFI_ERROR(aTHX_ msg);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
-SV *
+int
 Rmpfi_is_error ()
-CODE:
-  RETVAL = Rmpfi_is_error (aTHX);
-OUTPUT:  RETVAL
 
 
 void
 Rmpfi_set_error (op)
-	SV *	op
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_set_error(aTHX_ op);
-	if (PL_markstack_ptr != temp) {
+	int	op
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_set_error(op);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 Rmpfi_reset_error ()
 
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_reset_error();
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_reset_error();
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 SV *
 _itsa (a)
@@ -4378,104 +4019,74 @@ CODE:
 OUTPUT:  RETVAL
 
 
-SV *
+int
 Rmpfi_const_catalan (rop)
 	mpfi_t *	rop
-CODE:
-  RETVAL = Rmpfi_const_catalan (aTHX_ rop);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cbrt (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_cbrt (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sec (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sec (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_csc (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_csc (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_cot (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_cot (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_sech (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_sech (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_csch (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_csch (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_coth (rop, op)
 	mpfi_t *	rop
 	mpfi_t *	op
-CODE:
-  RETVAL = Rmpfi_coth (aTHX_ rop, op);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_atan2 (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_atan2 (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
-SV *
+int
 Rmpfi_hypot (rop, op1, op2)
 	mpfi_t *	rop
 	mpfi_t *	op1
 	mpfi_t *	op2
-CODE:
-  RETVAL = Rmpfi_hypot (aTHX_ rop, op1, op2);
-OUTPUT:  RETVAL
 
 void
 Rmpfi_urandom (rop, op, state)
 	mpfr_t *	rop
 	mpfi_t *	op
 	gmp_randstate_t *	state
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	Rmpfi_urandom(aTHX_ rop, op, state);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        Rmpfi_urandom(rop, op, state);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 SV *
 overload_true (op, second, third)
