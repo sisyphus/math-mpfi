@@ -176,7 +176,7 @@ undef($mpfi1);
 undef($mpfi2);
 $ok = '';
 if($have_gmp) {
-  $gmp = Math::GMPz->new(12346);
+  $gmp = Math::GMP->new(12346);
   ($mpfi1, $dis) = Rmpfi_init_set_z($gmp);
   $mpfi2 = Math::MPFI->new($gmp);
 
@@ -186,13 +186,13 @@ if($have_gmp) {
   if($mpfi1 == $mpfi2) {$ok .= 'b'}
   else {warn "Equivalence: ", $mpfi1 == $mpfi2, "\n"}
 
-$p = Rmpfi_get_prec($mpfi1);
-if($p == $prec) {$ok .= 'c'}
-else {warn "Precision expected to be $prec\nGot: $p\n"}
+  $p = Rmpfi_get_prec($mpfi1);
+  if($p == $prec) {$ok .= 'c'}
+  else {warn "Precision expected to be $prec\nGot: $p\n"}
 
-$p = Rmpfi_get_prec($mpfi2);
-if($p == $prec) {$ok .= 'd'}
-else {warn "Precision expected to be $prec\nGot: $p\n"}
+  $p = Rmpfi_get_prec($mpfi2);
+  if($p == $prec) {$ok .= 'd'}
+  else {warn "Precision expected to be $prec\nGot: $p\n"}
 
   if($ok eq 'abcd') {print "ok 5\n"}
   else {
