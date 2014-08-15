@@ -1,3 +1,5 @@
+0.06
+
 0.05
  - Alter the way that strEQ gets hold of HvNAME(SvSTASH(SvRV(sv))) - so that -Wall
     doesn't emit "null argument" warnings. (Thanks Daniel Kahn Gillmor.)
