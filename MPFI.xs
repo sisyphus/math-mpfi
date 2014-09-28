@@ -81,6 +81,14 @@ int _has_longdouble(void) {
 #endif
 }
 
+int _ivsize_bits(void) {
+   int ret = 0;
+#ifdef IVSIZE_BITS
+   ret = IVSIZE_BITS;
+#endif
+   return ret;
+}
+
 /*******************************
 Rounding Modes and Precision Handling
 *******************************/
@@ -1244,7 +1252,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1254,7 +1262,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvIV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1340,7 +1348,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1350,7 +1358,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvIV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1434,7 +1442,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1444,7 +1452,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvIV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1528,7 +1536,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1538,7 +1546,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvIV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
@@ -1618,7 +1626,7 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
@@ -1627,7 +1635,7 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvIV(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
@@ -1708,7 +1716,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -1716,7 +1724,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -1793,7 +1801,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -1801,7 +1809,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -1880,7 +1888,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
@@ -1889,7 +1897,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
@@ -1973,7 +1981,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
@@ -1982,7 +1990,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
@@ -2056,7 +2064,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2064,7 +2072,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2136,7 +2144,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2144,7 +2152,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2216,7 +2224,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2224,7 +2232,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2296,7 +2304,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #else
      if(SvUOK(b)) {
-       mpfr_init2(t, 8 * sizeof(uintmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_uj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2304,7 +2312,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(t, 8 * sizeof(intmax_t));
+       mpfr_init2(t, IVSIZE_BITS);
        mpfr_set_sj(t, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), t);
        mpfr_clear(t);
@@ -2528,7 +2536,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 #ifdef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
-       mpfr_init2(tr, 8 * sizeof(uintmax_t));
+       mpfr_init2(tr, IVSIZE_BITS);
        mpfr_set_uj(tr, SvUV(b), __gmpfr_default_rounding_mode);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
@@ -2544,7 +2552,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 
      if(SvIOK(b)) {
-       mpfr_init2(tr, 8 * sizeof(intmax_t));
+       mpfr_init2(tr, IVSIZE_BITS);
        mpfr_set_sj(tr, SvIV(b), __gmpfr_default_rounding_mode);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
@@ -2709,6 +2717,10 @@ _has_longlong ()
 
 int
 _has_longdouble ()
+
+
+int
+_ivsize_bits ()
 
 
 SV *
