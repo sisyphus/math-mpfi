@@ -2,6 +2,7 @@
  - Accommodate $Config{nvtype} eq __float128
  - No longer define USE_64_BIT_INT if ivtype is 'long'.
  - Rename USE_64_BIT_INT #define to MATH_MPFI_NEED_LONG_LONG_INT
+ - Define IVSIZE_BITS if MATH_MPFI_NEED_LONG_LONG_INT has been defined.
 
 0.05
  - Alter the way that strEQ gets hold of HvNAME(SvSTASH(SvRV(sv))) - so that -Wall
