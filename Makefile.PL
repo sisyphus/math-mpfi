@@ -33,10 +33,10 @@ my $float128_message = $have_float128 ? "Attempting to build with __float128 sup
 my $defines = $] < 5.008 ? "-DOLDPERL" : "-DNEWPERL";
 
 if($use_64_bit_int == -1) {}
-elsif($use_64_bit_int == 1) {$defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT"}
+elsif($use_64_bit_int == 1) {$defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT -DIVSIZE_BITS=" . (8 * $Config{ivsize})}
 else {
   unless($Config{ivsize} < 8 || $Config{ivtype} eq 'long') {
-    $defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT";
+    $defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT -DIVSIZE_BITS=" . (8 * $Config{ivsize});
   }
 }
 
