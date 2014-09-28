@@ -11,7 +11,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#if defined USE_64_BIT_INT
+#if defined MATH_MPFI_NEED_LONG_LONG_INT
 #ifndef _MSC_VER
 #include <inttypes.h>
 #endif
@@ -51,13 +51,13 @@ typedef __float128 float128;
 
 /* Has inttypes.h been included ?
               &&
- Do we have USE_64_BIT_INT ? */
+ Do we have MATH_MPFI_NEED_LONG_LONG_INT ? */
 
 int _has_inttypes(void) {
 #ifdef _MSC_VER
 return 0;
 #else
-#if defined USE_64_BIT_INT
+#if defined MATH_MPFI_NEED_LONG_LONG_INT
 return 1;
 #else
 return 0;
@@ -66,7 +66,7 @@ return 0;
 }
 
 int _has_longlong(void) {
-#ifdef USE_64_BIT_INT
+#ifdef MATH_MPFI_NEED_LONG_LONG_INT
     return 1;
 #else
     return 0;
@@ -1228,7 +1228,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
      if(mpfi_nan_p(*a)) return newSViv(0);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        ret = mpfi_cmp_ui(*a, SvUV(b));
        if(third == &PL_sv_yes) ret *= -1;
@@ -1324,7 +1324,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
      if(mpfi_nan_p(*a)) return newSViv(0);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        ret = mpfi_cmp_ui(*a, SvUV(b));
        if(third == &PL_sv_yes) ret *= -1;
@@ -1418,7 +1418,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
      if(mpfi_nan_p(*a)) return newSViv(0);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        ret = mpfi_cmp_ui(*a, SvUV(b));
        if(third == &PL_sv_yes) ret *= -1;
@@ -1512,7 +1512,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
      if(mpfi_nan_p(*a)) return newSViv(0);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        ret = mpfi_cmp_ui(*a, SvUV(b));
        if(third == &PL_sv_yes) ret *= -1;
@@ -1604,7 +1604,7 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
      int ret;
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        ret = mpfi_cmp_ui(*a, SvUV(b));
        if(ret == 0) return newSViv(1);
@@ -1696,7 +1696,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
      sv_setiv(obj, INT2PTR(IV,mpfi_t_obj));
      SvREADONLY_on(obj);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_add_ui(*mpfi_t_obj, *a, SvUV(b));
        return obj_ref;
@@ -1781,7 +1781,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
      sv_setiv(obj, INT2PTR(IV,mpfi_t_obj));
      SvREADONLY_on(obj);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_mul_ui(*mpfi_t_obj, *a, SvUV(b));
        return obj_ref;
@@ -1866,7 +1866,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
      sv_setiv(obj, INT2PTR(IV,mpfi_t_obj));
      SvREADONLY_on(obj);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        if(third == &PL_sv_yes) mpfi_ui_sub(*mpfi_t_obj, SvUV(b), *a);
        else mpfi_sub_ui(*mpfi_t_obj, *a, SvUV(b));
@@ -1959,7 +1959,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
      sv_setiv(obj, INT2PTR(IV,mpfi_t_obj));
      SvREADONLY_on(obj);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        if(third == &PL_sv_yes) mpfi_ui_div(*mpfi_t_obj, SvUV(b), *a);
        else mpfi_div_ui(*mpfi_t_obj, *a, SvUV(b));
@@ -2044,7 +2044,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
 
      SvREFCNT_inc(a);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_add_ui(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), SvUV(b));
        return a;
@@ -2124,7 +2124,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
 
      SvREFCNT_inc(a);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_mul_ui(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), SvUV(b));
        return a;
@@ -2204,7 +2204,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
 
      SvREFCNT_inc(a);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_sub_ui(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), SvUV(b));
        return a;
@@ -2284,7 +2284,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
 
      SvREFCNT_inc(a);
 
-#ifndef USE_64_BIT_INT
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfi_div_ui(*(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIV(SvRV(a)))), SvUV(b));
        return a;
@@ -2526,7 +2526,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
      obj = newSVrv(obj_ref, "Math::MPFI");
      mpfi_init(*mpfi_t_obj);
 
-#ifdef USE_64_BIT_INT
+#ifdef MATH_MPFI_NEED_LONG_LONG_INT
      if(SvUOK(b)) {
        mpfr_init2(tr, 8 * sizeof(uintmax_t));
        mpfr_set_uj(tr, SvUV(b), __gmpfr_default_rounding_mode);
