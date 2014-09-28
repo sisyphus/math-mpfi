@@ -33,10 +33,10 @@ my $float128_message = $have_float128 ? "Attempting to build with __float128 sup
 my $defines = $] < 5.008 ? "-DOLDPERL" : "-DNEWPERL";
 
 if($use_64_bit_int == -1) {}
-elsif($use_64_bit_int == 1) {$defines .= " -DUSE_64_BIT_INT"}
+elsif($use_64_bit_int == 1) {$defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT"}
 else {
-  unless($Config::Config{ivsize} < 8) {
-    $defines .= " -DUSE_64_BIT_INT";
+  unless($Config{ivsize} < 8 || $Config{ivtype} eq 'long') {
+    $defines .= " -DMATH_MPFI_NEED_LONG_LONG_INT";
   }
 }
 
@@ -54,7 +54,7 @@ $defines .= " -DNV_IS_LONG_DOUBLE" if $Config{nvtype} eq 'long double';
 
 print "\nThis module requires the following C libraries:\n";
 print " gmp-4.2.0 (or later)\n mpfr-2.3.0 (or later)\n\n";
-$defines =~ /-DUSE_64_BIT_INT/ ? print "Building with 64-bit'long long' support\n" :
+$defines =~ /-DMATH_MPFI_NEED_LONG_LONG_INT/ ? print "Building with 64-bit'long long' support\n" :
                                  print "Building without 64-bit 'long long' support\n";
 
 print "If this is wrong, see the \"64-bit support\" section in the README\n\n";
