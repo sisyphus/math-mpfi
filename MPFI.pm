@@ -6,7 +6,7 @@ require Exporter;
 *import = \&Exporter::import;
 require DynaLoader;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 #$VERSION = eval $VERSION;
 
 DynaLoader::bootstrap Math::MPFI $VERSION;
@@ -1167,7 +1167,7 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
 
     This program is free software; you may redistribute it and/or
     modify it under the same terms as Perl itself.
-    Copyright 2010, 2011 Sisyphus
+    Copyright 2010, 2011, 2014 Sisyphus
 
 =head1 AUTHOR
 
