@@ -48,31 +48,27 @@ you'll need to run:
 perl Makefile.pl INC="-I/path/to/gmp_includes -I/path/to/mpfr_includes -I/path/to/mpfi/include"
  LIBS="-L/path/to/mpfi_lib -lmpfi -L/path/to/mpfr_lib -lmpfr -L/path/to/gmp_lib -lgmp"
 
-======================================
-64-bit integer and long double support
-======================================
+==================================
+64-bit-int and long double support
+==================================
 
 If your perl's Config reports that 'ivsize' is greater than or
-equal to 8, then Math::MPFI will, by default, be built assuming access
-to the mpfr_*_uj and mpfr_*_sj functions. Else, access to those
-functions is, by default, denied. You can override the default by
-opening up the Makefile.PL and uncommenting the appropriate line (just
-a few lines down from the top of the file ... the comments in that
-file should make it clear).
+equal to 8 && 'ivtype' is not 'long', then Math::MPFI will, by default,
+be built with access to the mpfr_*_uj and mpfr_*_sj functions. Else,
+access to those functions is, by default, denied. You can override the
+default by opening up the Makefile.PL and uncommenting the appropriate
+line (just a few lines down from the top of the file ... the comments in
+that file should make it clear).
 
 Similarly, if your perl's Config reports that 'nvsize' is greater than
-8 then Math::MPFI will, by default, be built assuming access
-to the mpfr_*_ld functions. Else, access to those functions is,
-by default, denied. Again, you can override the default by opening up the
-Makefile.PL and uncommenting the appropriate line.
-If your 'nvtype' is __float128 and your mpfr library was built with the
-configure option --enable-float128, then you can access the __float128
-values using the overloaded operators if you build the module with:
-perl Makefile.PL F128=1
-(or if you set $have_float128 to 1 in the Makefile.PL).
+8 then Math::MPFI will, be built with access to the mpfr_*_ld functions.
+Else, access to those functions is, by default, denied. Again, you can
+override the default by opening up the Makefile.PL and uncommenting the
+appropriate line.
 
-It's certainly possible that the default behaviour is inappropriate for
-some perl/compiler configurations. Please let me know if you strike such
-a "perl/compiler configuration". I am contactable via email at
-sisyphus at(@) cpan dot (.) org.
+I believe it to be both unnecessary and inadvisable to override the
+default - but if you do find that you need to override the default,
+please let me know. That you have found it necessary to override the
+default is something I probably ought to know about.
 
+I am contactable by email at sisyphus at(@) cpan dot (.) org.
