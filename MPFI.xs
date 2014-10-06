@@ -86,7 +86,7 @@ int _ivsize_bits(void) {
 #ifdef IVSIZE_BITS
    ret = IVSIZE_BITS;
 #endif
-   return ret;
+   return ret;  
 }
 
 /*******************************
@@ -123,7 +123,7 @@ void _Rmpfi_set_default_prec(pTHX_ SV * p) {
 
 SV * Rmpfi_get_default_prec(pTHX) {
      return newSVuv(mpfr_get_default_prec());
-}
+}  
 
 void Rmpfi_set_prec(pTHX_ mpfi_t * op, SV * prec) {
      mpfi_set_prec(*op, (mp_prec_t)SvUV(prec));
@@ -1915,7 +1915,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 #elif !defined(CAN_PASS_FLOAT128)
 
-       mpfr_init2(t, LDBL_MANT_GIG);
+       mpfr_init2(t, LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNV(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
@@ -2123,7 +2123,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
        }
      }
 
-     SvREFCNT_dec(a);
+     SvREFCNT_dec(a);     
      croak("%s", "Invalid argument supplied to Math::MPFI::overload_add_eq");
 }
 
@@ -2203,7 +2203,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
        }
      }
 
-     SvREFCNT_dec(a);
+     SvREFCNT_dec(a);     
      croak("%s", "Invalid argument supplied to Math::MPFI::overload_mul_eq");
 }
 
@@ -2283,7 +2283,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
        }
      }
 
-     SvREFCNT_dec(a);
+     SvREFCNT_dec(a);     
      croak("%s", "Invalid argument supplied to Math::MPFI::overload_sub_eq");
 }
 
@@ -2363,7 +2363,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
        }
      }
 
-     SvREFCNT_dec(a);
+     SvREFCNT_dec(a);     
      croak("%s", "Invalid argument supplied to Math::MPFI::overload_div_eq");
 }
 
@@ -2442,7 +2442,7 @@ SV * overload_not(pTHX_ mpfi_t * op, SV * second, SV * third) {
      if(mpfi_nan_p(*op)) return newSViv(1);
      return newSViv(0);
 }
-
+     
 SV * overload_abs(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
@@ -2668,7 +2668,7 @@ SV * _MPFI_VERSION_MINOR(pTHX) {
      croak("MPFI_VERSION_MINOR not defined in mpfi.h until mpfi-1.5.1. Library version is %s", mpfi_get_version());
 #endif
 }
-
+  
 SV * _MPFI_VERSION_PATCHLEVEL(pTHX) {
 #ifdef MPFI_VERSION_PATCHLEVEL
      return newSVuv(MPFI_VERSION_PATCHLEVEL);
@@ -2702,26 +2702,26 @@ int _can_pass_float128(void) {
 #endif
 
 }
-MODULE = Math::MPFI  PACKAGE = Math::MPFI
+MODULE = Math::MPFI  PACKAGE = Math::MPFI  
 
 PROTOTYPES: DISABLE
 
 
 int
 _has_inttypes ()
-
+		
 
 int
 _has_longlong ()
-
+		
 
 int
 _has_longdouble ()
-
+		
 
 int
 _ivsize_bits ()
-
+		
 
 SV *
 RMPFI_BOTH_ARE_EXACT (ret)
@@ -4021,7 +4021,7 @@ RMPFI_ERROR (msg)
 
 int
 Rmpfi_is_error ()
-
+		
 
 void
 Rmpfi_set_error (op)
@@ -4041,7 +4041,7 @@ Rmpfi_set_error (op)
 
 void
 Rmpfi_reset_error ()
-
+		
         PREINIT:
         I32* temp;
         PPCODE:
@@ -4394,5 +4394,5 @@ OUTPUT:  RETVAL
 
 int
 _can_pass_float128 ()
-
+		
 
