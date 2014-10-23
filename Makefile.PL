@@ -15,15 +15,24 @@ $use_long_double = 0;# Let perl decide whether to include 'long double' support
 #$use_64_bit_int = 1; # Force inclusion of 64-bit 'long long' support
 #$use_long_double = 1;# Force inclusion of 'long double' support
 
-# We want to set $have_float128 to 1 if and only if:
+# We want to set $have_float128 to 1 if:
 # the mpfr library was built with the configure option '--enable-float128' &&
 # $Config{nvtype} is '__float128'.
-# To set $have_float128 to 1, we can either run 'perl Makefile.PL f128=1'
+# To set $have_float128 to 1, we can either run 'perl Makefile.PL F128=1'
 # or assign the value 1 to $have_float128 in the next line of code.
 
 $have_float128 = 0; # Assign 1 to force inclusion of __float128 support
 
+# Logical thing to do is to set $have_float128 if Math::MPFR::_can_pass_float128() was set.
+# So we do this in the following section.
+# If there's a desire to override this, then that can be done by running 'perl Makefile.PL F128=0'.
+eval{require Math::MPFR};
+if(!$@ && $Math::MPFR::VERSION > 3.22) {
+  $have_float128 = 1 if Math::MPFR::_can_pass_float128();
+}
+
 for(@ARGV) {
+  $have_float128 = 0 if $_ eq 'F128=0';
   $have_float128 = 1 if $_ eq 'F128=1';
 }
 
