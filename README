@@ -26,7 +26,7 @@ GMP source.
 For the MPFI library see:
 https://gforge.inria.fr/projects/mpfi/
 
-You'll also need to have Math::MPFR (version 2.01 or later) installed.
+You'll also need to have Math::MPFR (version 3.23 or later) installed.
 
 To build this module you need perl 5.6.0 or later. I'm not sure of all
 the requirements to get it to build with earlier versions of perl, but
@@ -61,13 +61,29 @@ line (just a few lines down from the top of the file ... the comments in
 that file should make it clear).
 
 Similarly, if your perl's Config reports that 'nvsize' is greater than
-8 then Math::MPFI will, be built with access to the mpfr_*_ld functions.
+8 then Math::MPFI will be built with access to the mpfr_*_ld functions.
 Else, access to those functions is, by default, denied. Again, you can
 override the default by opening up the Makefile.PL and uncommenting the
 appropriate line.
 
+==================
+__float128 support
+==================
+
+Beginning perl-5.21.3 (or thereabouts) it is possible to build perl with
+nvtype of __float128 (if the architecture and compiler support that data type).
+The Makefile.PL should automatically turn on __float128 support if that's
+appropriate - whether it's appropriate depends also upon how both the mpfr
+library and have been built.
+If need be, you can build Math::MPFI by starting with:
+
+perl Makefile.PL F128=1
+ which will force __float128 support, or:
+perl Makefile.PL F128=0
+ which will force __float128 to be unsupported.
+
 I believe it to be both unnecessary and inadvisable to override the
-default - but if you do find that you need to override the default,
+defaults - but if you do find that you need to override the default,
 please let me know. That you have found it necessary to override the
 default is something I probably ought to know about.
 
