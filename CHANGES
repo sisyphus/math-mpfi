@@ -1,4 +1,5 @@
 0.07
+ - Further tweaks for builds where nvtype is __float128
 
 0.06
  - Accommodate $Config{nvtype} eq __float128
