@@ -2,6 +2,18 @@ use Math::MPFI qw(:mpfi);
 use Math::MPFR qw(:mpfr);
 use warnings;
 use strict;
+use Config;
+
+my $f128_mismatch = 0;
+
+# Set $f128_mismatch if Math::MPFR can handle __float128 && Math::MPFI has been built to *not*
+# handle __float128 && nvtype is __float128.
+$f128_mismatch = 1 if(Math::MPFR::_can_pass_float128()
+                  && !Math::MPFI::_can_pass_float128());
+
+warn "\nMath::MPFR and Math::MPFI have been built with different __float128 handling\n",
+     "capabilities. Better to build Math::MPFI by starting with:\n",
+     "   perl Makefile.PL F128=1\n\n" if $f128_mismatch;
 
 my $tests = 14;
 
@@ -21,7 +33,16 @@ if(Math::MPFI::_has_longdouble()) {
   ## Add, Sub
 
   $rop = $rop + $bi;
-  $fr = $fr + $bi;
+
+  if(!$f128_mismatch) {
+    $fr = $fr + $bi;
+  }
+  else {
+    my $temp = Math::MPFR->new();
+    Rmpfr_set_ld($temp, $bi, Rmpfr_get_default_rounding_mode());
+    $fr = $fr + $temp;
+  }
+
   if(!Rmpfi_cmp_fr($rop, $fr)) {print "ok 1\n"}
   else {
     warn "\$rop: $rop\n\$fr: $fr\n";
@@ -29,7 +50,15 @@ if(Math::MPFI::_has_longdouble()) {
   }
 
   $rop += $bi;
-  $fr += $bi;
+  if(!$f128_mismatch) {
+    $fr += $bi;
+  }
+  else {
+    my $temp = Math::MPFR->new();
+    Rmpfr_set_ld($temp, $bi, Rmpfr_get_default_rounding_mode());
+    $fr += $temp;
+  }
+
   if(!Rmpfi_cmp_fr($rop, $fr)) {print "ok 2\n"}
   else {
     warn "\$rop: $rop\n\$fr: $fr\n";
