@@ -2,8 +2,20 @@ use Math::MPFI qw(:mpfi);
 use Math::MPFR qw(:mpfr);
 use warnings;
 use strict;
+use Config;
 
 print "1..11\n";
+
+my $f128_mismatch = 0;
+
+# Set $f128_mismatch if Math::MPFR can handle __float128 && Math::MPFI has been built to *not*
+# handle __float128 && nvtype is __float128.
+$f128_mismatch = 1 if(Math::MPFR::_can_pass_float128()
+                  && !Math::MPFI::_can_pass_float128());
+
+warn "\nMath::MPFR and Math::MPFI have been built with different __float128 handling\n",
+     "capabilities. Better to build Math::MPFI by starting with:\n",
+     "   perl Makefile.PL F128=1\n\n" if $f128_mismatch;
 
 my ($have_gmpq, $have_gmpz, $have_gmp) = (0, 0, 0);
 my ($mpq, $mpz, $gmp);
@@ -61,8 +73,15 @@ $foo2 = $foo1 + $double;
 $foo1 += $double;
 
 my $check = Math::MPFI->new(12345);
-if(Math::MPFI::_has_longdouble()) { # MPFI has no _ld functions
-  my $temp = Math::MPFR->new($double);
+if(Math::MPFI::_has_longdouble()) { # MPFI has no _ld/_float128 functions
+  my $temp;
+  if(!$f128_mismatch) {
+    $temp = Math::MPFR->new($double);
+  }
+  else {
+    $temp = Math::MPFR->new();
+    Rmpfr_set_ld($temp, $double, Rmpfr_get_default_rounding_mode());
+  }
   Rmpfi_add_fr($check, $check, $temp);
 }
 else {
