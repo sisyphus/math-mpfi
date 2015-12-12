@@ -1,4 +1,5 @@
 0.08
+ - Amend typedef of __float128 alignment (Windows only)
 
 0.07
  - Further tweaks for builds where nvtype is __float128
