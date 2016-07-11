@@ -1,5 +1,6 @@
 0.08
  - Amend typedef of __float128 alignment (Windows only)
+ - Replace SvUV/SvIV/SvNV with SvUVX/SvIVX/SvNVX where appropriate
 
 0.07
  - Further tweaks for builds where nvtype is __float128
