@@ -36,9 +36,6 @@ for(@ARGV) {
   $have_float128 = 1 if $_ eq 'F128=1';
 }
 
-my $float128_message = $have_float128 ? "Attempting to build with __float128 support\n"
-                                  : "Building without __float128 support\n";
-
 my $defines = $] < 5.008 ? "-DOLDPERL" : "-DNEWPERL";
 
 if($use_64_bit_int == -1) {}
@@ -50,16 +47,20 @@ else {
 }
 
 if($use_long_double == -1) {}
-elsif($use_long_double == 1) {$defines .= " -DUSE_LONG_DOUBLE"}
+elsif($use_long_double == 1) {
+  $defines .= " -DNV_IS_FLOAT128" if $Config{nvtype} eq '__float128';
+  $defines .= " -DNV_IS_LONG_DOUBLE" if $Config{nvtype} eq 'long double';
+}
 else {
   if($Config::Config{nvsize} > 8 ) {
-    $defines .= " -DUSE_LONG_DOUBLE";
+    $defines .= " -DNV_IS_FLOAT128" if $Config{nvtype} eq '__float128';
+    $defines .= " -DNV_IS_LONG_DOUBLE" if $Config{nvtype} eq 'long double';
   }
 }
 
+if($Config::Config{nvtype} eq 'double') {$defines .= " -DNV_IS_DOUBLE"}
+
 $defines .= " -DMPFR_WANT_FLOAT128" if $have_float128;
-$defines .= " -DNV_IS_FLOAT128" if $Config{nvtype} eq '__float128';
-$defines .= " -DNV_IS_LONG_DOUBLE" if $Config{nvtype} eq 'long double';
 
 print "\nThis module requires the following C libraries:\n";
 print " gmp-4.2.0 (or later)\n mpfr-2.3.0 (or later)\n\n";
@@ -68,13 +69,18 @@ $defines =~ /-DMATH_MPFI_NEED_LONG_LONG_INT/ ? print "Building with 64-bit'long 
 
 print "If this is wrong, see the \"64-bit support\" section in the README\n\n";
 
-$defines =~ /-DUSE_LONG_DOUBLE/ ? print "Building with 'long double' support\n" :
+$defines =~ /-DNV_IS_LONG_DOUBLE/ ? print "Building with 'long double' support\n" :
                                  print "Building without 'long double' support\n";
 
 print "If this is wrong, see the \"64-bit support\" section in the README\n\n";
 
-print "\n$float128_message";
+if($Config{nvtype} eq '__float128') {print "Attempting to build with __float128 support\n"}
+else {print "Building without __float128 support\n"}
 print "If this is wrong, see the \"Float128 conversion\" section in the README\n\n";
+
+if($^O =~ /MSWin32/i && $] < 5.022) {
+  $defines .= " -D_WIN32_BIZARRE_INFNAN";
+}
 
 my %options = (
   NAME => 'Math::MPFI',
