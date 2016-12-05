@@ -1,6 +1,8 @@
 0.08
  - Amend typedef of __float128 alignment (Windows only)
  - Replace SvUV/SvIV/SvNV with SvUVX/SvIVX/SvNVX where appropriate. (In typemap, too.)
+ - Alter NV overloading - replace the condition (SvNOK(b)) with (SvNOK(b) && !SvPOK(b))
+ - Add Rmpfi_set_NV and Rmpfi_get_NV.
 
 0.07
  - Further tweaks for builds where nvtype is __float128
