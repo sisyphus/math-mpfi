@@ -111,6 +111,7 @@ TRmpfi_out_str TRmpfi_inp_str
 Rmpfi_get_version Rmpfi_const_catalan Rmpfi_cbrt Rmpfi_hypot
 Rmpfi_sec Rmpfi_csc Rmpfi_cot Rmpfi_sech Rmpfi_csch Rmpfi_coth
 Rmpfi_atan2 Rmpfi_urandom
+Rmpfi_get_NV Rmpfi_set_NV
 );
 
 %Math::MPFI::EXPORT_TAGS =(mpfi => [qw(
@@ -165,6 +166,7 @@ TRmpfi_out_str TRmpfi_inp_str
 Rmpfi_get_version Rmpfi_const_catalan Rmpfi_cbrt Rmpfi_hypot
 Rmpfi_sec Rmpfi_csc Rmpfi_cot Rmpfi_sech Rmpfi_csch Rmpfi_coth
 Rmpfi_atan2 Rmpfi_urandom
+Rmpfi_get_NV Rmpfi_set_NV
 )]);
 
 *TRmpfi_out_str = \&Rmpfi_out_str;
@@ -519,13 +521,14 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
 
     These functions assign new values to already initialized intervals
 
-    $si = Rmpfi_set ($rop, $op);
+    $si = Rmpfi_set    ($rop, $op);
     $si = Rmpfi_set_ui ($rop, $ui);
     $si = Rmpfi_set_si ($rop, $si);
-    $si = Rmpfi_set_d ($rop, $double);
-    $si = Rmpfi_set_z ($rop, $z);   # $z is a Math::GMP
+    $si = Rmpfi_set_d  ($rop, $double);
+    $si = Rmpfi_set_NV ($rop, $NV);
+    $si = Rmpfi_set_z  ($rop, $z);  # $z is a Math::GMP
                                     # or Math::GMPz object.
-    $si = Rmpfi_set_q ($rop, $q);   # $q is a Math::GMPq object
+    $si = Rmpfi_set_q  ($rop, $q);  # $q is a Math::GMPq object
     $si = Rmpfi_set_fr ($rop, $fr); # $fr is a Math::MPFR object
      Sets the value of $rop from 2nd arg, rounded outward to the precision
      of $rop. (The value of $op is then contained within $rop.)
@@ -656,6 +659,10 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
     $double = Rmpfi_get_d ($op);
      Converts $op to a double, which is the center of $op rounded to the
      nearest double.
+
+    $NV = Rmpfi_get_NV ($op);
+     Converts $op to an NV, which is the center of $op rounded to the
+     nearest NV.
 
     Rmpfi_get_fr ($fr, $op); # $fr is a Math::MPFR object
      Converts $op to a floating-point number, which is the center of $op
