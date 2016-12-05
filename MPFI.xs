@@ -11,45 +11,41 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#if defined MATH_MPFI_NEED_LONG_LONG_INT
-#ifndef _MSC_VER
-#include <inttypes.h>
-#endif
-#endif
 
-#include <mpfi.h>
-#include <mpfi_io.h>
-#include <float.h>
+#include "math_mpfi_include.h"
 
-#ifdef MPFR_WANT_FLOAT128
-#include <quadmath.h>
-#ifdef NV_IS_FLOAT128
-#define CAN_PASS_FLOAT128
-#endif
-#if defined(__MINGW32__) && !defined(__MINGW64__)
-typedef __float128 float128 __attribute__ ((aligned(32)));
-#elif defined(__MINGW64__)
-typedef __float128 float128 __attribute__ ((aligned(8)));
+int _win32_infnanstring(char * s) { /* MS Windows only - detect 1.#INF and 1.#IND
+                                     * Need to do this to correctly handle a scalar
+                                     * that is both NOK and POK on older win32 perls */
+
+  /*************************************
+  * if input string    =~ /^\-1\.#INF$/ return -1
+  * elsif input string =~ /^\+?1\.#INF$/i return 1
+  * elsif input string =~ /^(\-|\+)?1\.#IND$/i return 2
+  * else return 0
+  **************************************/
+
+#ifdef _WIN32_BIZARRE_INFNAN
+
+  int sign = 1;
+  int factor = 1;
+
+  if(s[0] == '-') {
+    sign = -1;
+    s++;
+  }
+  else {
+    if(s[0] == '+') s++;
+  }
+
+  if(!strcmp(s, "1.#INF")) return sign;
+  if(!strcmp(s, "1.#IND")) return 2;
+
+  return 0;
 #else
-typedef __float128 float128;
+  croak("Math::MPFI::_win32_infnanstring not implemented for this build of perl");
 #endif
-#endif
-
-#ifdef OLDPERL
-#define SvUOK SvIsUV
-#endif
-
-#ifndef Newx
-#  define Newx(v,n,t) New(0,v,n,t)
-#endif
-
-#ifndef Newxz
-#  define Newxz(v,n,t) Newz(0,v,n,t)
-#endif
-
-#ifndef __gmpfr_default_rounding_mode
-#define __gmpfr_default_rounding_mode mpfr_get_default_rounding_mode()
-#endif
+}
 
 /* Has inttypes.h been included ?
               &&
@@ -76,7 +72,7 @@ int _has_longlong(void) {
 }
 
 int _has_longdouble(void) {
-#ifdef USE_LONG_DOUBLE
+#if defined(NV_IS_LONG_DOUBLE) || defined(NV_IS_FLOAT128)
     return 1;
 #else
     return 0;
@@ -231,6 +227,87 @@ int Rmpfi_set_si (mpfi_t * rop, long op) {
 
 int Rmpfi_set_d (pTHX_ mpfi_t * rop, SV * op) {
     return mpfi_set_d(*rop, (double)SvNV(op));
+}
+
+int Rmpfi_set_NV (pTHX_ mpfi_t * rop, SV * op) {
+
+#if defined(NV_IS_DOUBLE)
+    if(!SvNOK(op)) croak("Second arg given to Rmpfi_set_NV is not an NV");
+    return mpfi_set_d(*rop, (double)SvNVX(op));
+
+#elif defined(NV_IS_LONG_DOUBLE)
+    mpfr_t t;
+    int ret;
+    if(!SvNOK(op)) croak("Second arg given to Rmpfi_set_NV is not an NV");
+    mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
+    mpfr_set_ld(t, (long double)SvNVX(op), GMP_RNDN);
+    ret = mpfi_set_fr(*rop, t);
+    mpfr_clear(t);
+    return ret;
+
+#elif defined(MPFI_CAN_PASS_FLOAT128)
+    mpfr_t t;
+    int ret;
+    if(!SvNOK(op)) croak("Second arg given to Rmpfi_set_NV is not an NV");
+    mpfr_init2(t, 113);
+    mpfr_set_float128(t, (float128)SvNVX(op), GMP_RNDN);
+    ret = mpfi_set_fr(*rop, t);
+    mpfr_clear(t);
+    return ret;
+
+#else
+/* NV_IS_FLOAT128 */
+     char * buffer;
+     mpfr_t t;
+     int exp, exp2 = 0;
+     float128 ld, buffer_size;
+     int returned;
+
+     if(!SvNOK(op)) croak("Second arg given to Rmpfi_set_NV is not an NV");
+
+     mpfr_init2(t, 113);
+     ld = (float128)SvNVX(op);
+
+     if(ld != ld) {
+       mpfr_set_nan(t);
+       mpfi_set_fr(*rop, t);
+       mpfr_clear(t);
+       return newSViv(0);
+     }
+
+     if(ld != 0.0Q && (ld / ld != 1)) {
+       returned = ld > 0.0Q ? 1 : -1;
+       mpfr_set_inf(t, returned);
+       mpfi_set_fr(*rop, t);
+       mpfr_clear(t);
+       return newSViv(0);
+     }
+
+     ld = frexpq((float128)SvNVX(op), &exp);
+
+     while(ld != floorq(ld)) {
+          ld *= 2;
+          exp2 += 1;
+     }
+
+     buffer_size = ld < 0.0Q ? ld * -1.0Q : ld;
+     buffer_size = ceilq(logq(buffer_size + 1) / 2.30258509299404568401799145468436418Q);
+
+     Newxz(buffer, buffer_size + 5, char);
+
+     returned = quadmath_snprintf(buffer, (size_t)buffer_size + 5, "%.0Qf", ld);
+     if(returned < 0) croak("In Rmpfi_set_NV, encoding error in quadmath_snprintf function");
+     if(returned >= buffer_size + 5) croak("In Rmpfi_set_NV, buffer given to quadmath_snprintf function was too small");
+     mpfr_set_str(t, buffer, 10, (mp_rnd_t)round);
+     Safefree(buffer);
+
+     if (exp2 > exp) mpfr_div_2ui(t, t, exp2 - exp, GMP_RNDN);
+     else mpfr_mul_2ui(t, t, exp - exp2, GMP_RNDN);
+     returned = mpfi_set_fr(*rop, t);
+     mpfr_clear(t);
+     return newSViv(returned);
+
+#endif
 }
 
 int Rmpfi_set_z (mpfi_t * rop, mpz_t * op) {
@@ -612,6 +689,114 @@ double Rmpfi_get_d (mpfi_t * op) {
 
 void Rmpfi_get_fr(mpfr_t * rop, mpfi_t * op) {
      mpfi_get_fr(*rop, *op);
+}
+
+SV * Rmpfi_get_NV(pTHX_ mpfi_t * op) {
+
+#if defined(NV_IS_DOUBLE)
+     return newSVnv(mpfi_get_d(*op));
+
+#elif defined(NV_IS_LONG_DOUBLE)
+     mpfr_t t;
+     long double ld;
+     mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
+     mpfi_get_fr(t, *op);
+     ld = mpfr_get_ld(t, MPFR_RNDN);
+     mpfr_clear(t);
+     return newSVnv(ld);
+
+#elif defined(MPFI_CAN_PASS_FLOAT128)
+     mpfr_t t;
+     float128 ld;
+     mpfr_init2(t, 113);
+     mpfi_get_fr(t, *op);
+     ld = mpfr_get_float128(t, MPFR_RNDN);
+     mpfr_clear(t);
+     return newSVnv(ld);
+
+#else
+/* NV_IS_FLOAT128 */
+     mpfr_t t;
+     long i, exp, retract = 0;
+     char *out;
+     float128 ret = 0.0Q, sign = 1.0Q;
+     float128 add_on[113] = {
+      5192296858534827628530496329220096e0Q, 2596148429267413814265248164610048e0Q,
+      1298074214633706907132624082305024e0Q, 649037107316853453566312041152512e0Q,
+      324518553658426726783156020576256e0Q, 162259276829213363391578010288128e0Q,
+      81129638414606681695789005144064e0Q, 40564819207303340847894502572032e0Q,
+      20282409603651670423947251286016e0Q, 10141204801825835211973625643008e0Q,
+      5070602400912917605986812821504e0Q, 2535301200456458802993406410752e0Q,
+      1267650600228229401496703205376e0Q, 633825300114114700748351602688e0Q,
+      316912650057057350374175801344e0Q, 158456325028528675187087900672e0Q, 79228162514264337593543950336e0Q,
+      39614081257132168796771975168e0Q, 19807040628566084398385987584e0Q, 9903520314283042199192993792e0Q,
+      4951760157141521099596496896e0Q, 2475880078570760549798248448e0Q, 1237940039285380274899124224e0Q,
+      618970019642690137449562112e0Q, 309485009821345068724781056e0Q, 154742504910672534362390528e0Q,
+      77371252455336267181195264e0Q, 38685626227668133590597632e0Q, 19342813113834066795298816e0Q,
+      9671406556917033397649408e0Q, 4835703278458516698824704e0Q, 2417851639229258349412352e0Q,
+      1208925819614629174706176e0Q, 604462909807314587353088e0Q, 302231454903657293676544e0Q,
+      151115727451828646838272e0Q, 75557863725914323419136e0Q, 37778931862957161709568e0Q,
+      18889465931478580854784e0Q, 9444732965739290427392e0Q, 4722366482869645213696e0Q,
+      2361183241434822606848e0Q, 1180591620717411303424e0Q, 590295810358705651712e0Q, 295147905179352825856e0Q,
+      147573952589676412928e0Q, 73786976294838206464e0Q, 36893488147419103232e0Q, 18446744073709551616e0Q,
+      9223372036854775808e0Q, 4611686018427387904e0Q, 2305843009213693952e0Q, 1152921504606846976e0Q,
+      576460752303423488e0Q, 288230376151711744e0Q, 144115188075855872e0Q, 72057594037927936e0Q,
+      36028797018963968e0Q, 18014398509481984e0Q, 9007199254740992e0Q, 4503599627370496e0Q,
+      2251799813685248e0Q, 1125899906842624e0Q, 562949953421312e0Q, 281474976710656e0Q, 140737488355328e0Q,
+      70368744177664e0Q, 35184372088832e0Q, 17592186044416e0Q, 8796093022208e0Q, 4398046511104e0Q,
+      2199023255552e0Q, 1099511627776e0Q, 549755813888e0Q, 274877906944e0Q, 137438953472e0Q, 68719476736e0Q,
+      34359738368e0Q, 17179869184e0Q, 8589934592e0Q, 4294967296e0Q, 2147483648e0Q, 1073741824e0Q, 536870912e0Q,
+      268435456e0Q, 134217728e0Q, 67108864e0Q, 33554432e0Q, 16777216e0Q, 8388608e0Q, 4194304e0Q, 2097152e0Q,
+      1048576e0Q, 524288e0Q, 262144e0Q, 131072e0Q, 65536e0Q, 32768e0Q, 16384e0Q, 8192e0Q, 4096e0Q, 2048e0Q,
+      1024e0Q, 512e0Q, 256e0Q, 128e0Q, 64e0Q, 32e0Q, 16e0Q, 8e0Q, 4e0Q, 2e0Q, 1e0Q };
+
+     mpfr_init2(t, 113);
+     mpfi_get_fr(t, *op);
+
+     if(mpfr_nan_p(t) || mpfr_inf_p(t)) {
+       mpfr_clear(t);
+       return newSVnv((float128)mpfr_get_d(t, GMP_RNDN));
+     }
+
+     Newxz(out, 115, char);
+     if(out == NULL) croak("Failed to allocate memory in Rmpfi_get_NV function");
+
+     mpfr_get_str(out, &exp, 2, 113, t, (mp_rnd_t)SvUV(round));
+
+     mpfr_clear(t);
+
+     if(out[0] == '-') {
+       sign = -1.0Q;
+       out++;
+       retract++;
+     }
+     else {
+       if(out[0] == '+') {
+         out++;
+         retract++;
+       }
+     }
+
+     for(i = 0; i < 113; i++) {
+       if(out[i] == '1') ret += add_on[i];
+     }
+
+     if(retract) out--;
+     Safefree(out);
+
+     if(exp > 113) {
+       retract = exp - 113; /* re-using 'retract' */
+       for(i = 0; i < retract; i++) ret *= 2.0Q;
+     }
+
+     if(exp < 113) {
+       for(i = exp; i < 113; i++) ret /= 2.0Q;
+     }
+
+     return newSVnv(ret * sign);
+
+#endif
+
 }
 
 /*******************************
@@ -1200,7 +1385,7 @@ void Rmpfi_reset_error(void) {
 SV * _itsa(pTHX_ SV * a) {
      if(SvUOK(a)) return newSVuv(1);
      if(SvIOK(a)) return newSVuv(2);
-     if(SvNOK(a)) return newSVuv(3);
+     if(SvNOK(a) && !SvPOK(a)) return newSVuv(3);
      if(SvPOK(a)) return newSVuv(4);
      if(sv_isobject(a)) {
        const char *h = HvNAME(SvSTASH(SvRV(a)));
@@ -1275,30 +1460,33 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
        if(SvNVX(b) != SvNVX(b)) return 0; /* NaN */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
        if(third == &PL_sv_yes) ret *= -1;
 
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1370,29 +1558,32 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
        if(SvNVX(b) != SvNVX(b)) return 0;
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
        if(third == &PL_sv_yes) ret *= -1;
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1464,29 +1655,32 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
        if(SvNVX(b) != SvNVX(b)) return 0;
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
        if(third == &PL_sv_yes) ret *= -1;
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1558,29 +1752,32 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
        if(SvNVX(b) != SvNVX(b)) return 0;
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
        if(third == &PL_sv_yes) ret *= -1;
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1646,25 +1843,28 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1734,25 +1934,28 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_add_d(*mpfi_t_obj, *a, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1819,25 +2022,28 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_mul_d(*mpfi_t_obj, *a, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -1908,28 +2114,31 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        if(third == &PL_sv_yes) mpfi_d_sub(*mpfi_t_obj, SvNVX(b), *a);
        else mpfi_sub_d(*mpfi_t_obj, *a, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2001,28 +2210,31 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        if(third == &PL_sv_yes) mpfi_d_div(*mpfi_t_obj, SvNVX(b), *a);
        else mpfi_div_d(*mpfi_t_obj, *a, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2082,25 +2294,28 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_add_d(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2162,25 +2377,28 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_mul_d(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2242,25 +2460,28 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_sub_d(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2322,25 +2543,28 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_div_d(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(t, LDBL_MANT_DIG);
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
 
@@ -2596,25 +2820,28 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
      }
 #endif
 
-     if(SvNOK(b)) {
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
 
-#ifndef USE_LONG_DOUBLE
+#ifdef NV_IS_DOUBLE
 
        mpfi_set_d(*mpfi_t_obj, SvNVX(b));
 
-#elif !defined(CAN_PASS_FLOAT128)
+#elif defined(NV_IS_LONG_DOUBLE)
 
-       mpfr_init2(tr, LDBL_MANT_DIG);
+       mpfr_init2(tr, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(tr, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
 
-#else
+#elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(tr, FLT128_MANT_DIG);
        mpfr_set_float128(tr, SvNVX(b), __gmpfr_default_rounding_mode);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
+
+#else
+/* NV_IS_FLOAT128 */
 
 #endif
        if(third == &PL_sv_yes){
@@ -2697,17 +2924,31 @@ SV * _get_xs_version(pTHX) {
 
 int _can_pass_float128(void) {
 
-#ifdef CAN_PASS_FLOAT128
+#ifdef MPFI_CAN_PASS_FLOAT128
    return 1;
 #else
    return 0;
 #endif
 
 }
+
+int _SvNOK(pTHX_ SV * in) {
+  if(SvNOK(in)) return 1;
+  return 0;
+}
+
+int _SvPOK(pTHX_ SV * in) {
+  if(SvPOK(in)) return 1;
+  return 0;
+}
 MODULE = Math::MPFI  PACKAGE = Math::MPFI
 
 PROTOTYPES: DISABLE
 
+
+int
+_win32_infnanstring (s)
+	char *	s
 
 int
 _has_inttypes ()
@@ -2889,6 +3130,14 @@ Rmpfi_set_d (rop, op)
 	SV *	op
 CODE:
   RETVAL = Rmpfi_set_d (aTHX_ rop, op);
+OUTPUT:  RETVAL
+
+int
+Rmpfi_set_NV (rop, op)
+	mpfi_t *	rop
+	SV *	op
+CODE:
+  RETVAL = Rmpfi_set_NV (aTHX_ rop, op);
 OUTPUT:  RETVAL
 
 int
@@ -3257,6 +3506,13 @@ Rmpfi_get_fr (rop, op)
         }
         /* must have used dXSARGS; list context implied */
         return; /* assume stack size is correct */
+
+SV *
+Rmpfi_get_NV (op)
+	mpfi_t *	op
+CODE:
+  RETVAL = Rmpfi_get_NV (aTHX_ op);
+OUTPUT:  RETVAL
 
 int
 Rmpfi_add (rop, op1, op2)
@@ -4397,4 +4653,18 @@ OUTPUT:  RETVAL
 int
 _can_pass_float128 ()
 
+
+int
+_SvNOK (in)
+	SV *	in
+CODE:
+  RETVAL = _SvNOK (aTHX_ in);
+OUTPUT:  RETVAL
+
+int
+_SvPOK (in)
+	SV *	in
+CODE:
+  RETVAL = _SvPOK (aTHX_ in);
+OUTPUT:  RETVAL
 
