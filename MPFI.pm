@@ -172,6 +172,9 @@ Rmpfi_get_NV Rmpfi_set_NV
 *TRmpfi_out_str = \&Rmpfi_out_str;
 *TRmpfi_inp_str = \&Rmpfi_inp_str;
 
+$Math::MPFI::NOK_POK = 0; # Set to 1 to allow warnings in new() and overloaded operations when
+                          # a scalar that has set both NOK (NV) and POK (PV) flags is encountered
+
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
 
 sub new {
@@ -1133,6 +1136,21 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
     $GMP_version is set to the version of the gmp library being
     used by the mpfi library that Math::MPFI uses.
     (The function is not exportable.)
+
+   $iv = Math::MPFI::nok_pokflag(); # not exported
+    Returns the value of the nok_pok flag. This flag is
+    initialized to zero, but incemented by 1 whenever a
+    scalar that is both a float (NOK) and string (POK) is passed
+    to new() or to an overloaded operator. The value of the flag
+    therefore tells us how many times such events occurred . The
+    flag can be reset to 0 by running clear_nok_pok().
+
+   Math::MPFI::set_nok_pok($iv); # not exported
+    Resets the nok_pok flag to the value specified by $iv.
+
+   Math::MPFI::clear_nok_pok(); # not exported
+    Resets the nok_pok flag to 0.(Essentially the same as
+    running Math::MPFI::set_nok_pok(0).)
 
    ##############
 
