@@ -755,7 +755,7 @@ SV * Rmpfi_get_NV(pTHX_ mpfi_t * op) {
      long double ld;
      mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
      mpfi_get_fr(t, *op);
-     ld = mpfr_get_ld(t, MPFR_RNDN);
+     ld = mpfr_get_ld(t, GMP_RNDN);
      mpfr_clear(t);
      return newSVnv(ld);
 
@@ -764,7 +764,7 @@ SV * Rmpfi_get_NV(pTHX_ mpfi_t * op) {
      float128 ld;
      mpfr_init2(t, 113);
      mpfi_get_fr(t, *op);
-     ld = mpfr_get_float128(t, MPFR_RNDN);
+     ld = mpfr_get_float128(t, GMP_RNDN);
      mpfr_clear(t);
      return newSVnv(ld);
 
