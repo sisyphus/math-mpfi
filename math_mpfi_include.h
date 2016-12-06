@@ -116,3 +116,11 @@ typedef __float128 float128;
 #ifndef __gmpfr_default_rounding_mode
 #define __gmpfr_default_rounding_mode mpfr_get_default_rounding_mode()
 #endif
+
+#define NOK_POK_DUALVAR_CHECK \
+        if(SvNOK(b)) { \
+         nok_pok++; \
+         if(SvIV(get_sv("Math::MPFI::NOK_POK", 0))) \
+           warn("Scalar passed to %s is both NV and PV. Using PV (string) value"
+
+
