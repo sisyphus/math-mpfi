@@ -14,6 +14,14 @@
 
 #include "math_mpfi_include.h"
 
+int nok_pok = 0; /* flag that is incremented whenever a scalar that is both *
+                  * NOK and POK is passed to new or an overloaded operator  */
+
+int NOK_POK_val(pTHX) {
+  /* return the numeric value of $Math::MPFI::NOK_POK */
+  return SvIV(get_sv("Math::MPFI::NOK_POK", 0));
+}
+
 int _win32_infnanstring(char * s) { /* MS Windows only - detect 1.#INF and 1.#IND
                                      * Need to do this to correctly handle a scalar
                                      * that is both NOK and POK on older win32 perls */
@@ -85,6 +93,52 @@ int _ivsize_bits(void) {
    ret = IVSIZE_BITS;
 #endif
    return ret;
+}
+
+SV * _my_mpfr_set_float128(mpfr_t *p, SV * q, unsigned int round) { /* internal use only */
+#if defined(NV_IS_FLOAT128)
+     char * buffer;
+     int exp, exp2 = 0;
+     float128 ld, buffer_size;
+     int returned;
+
+     ld = (float128)SvNVX(q);
+
+     if(ld != ld) {
+       mpfr_set_nan(*p);
+       return newSViv(0);
+     }
+
+     if(ld != 0.0Q && (ld / ld != 1)) {
+       returned = ld > 0.0Q ? 1 : -1;
+       mpfr_set_inf(*p, returned);
+       return newSViv(0);
+     }
+
+     ld = frexpq((float128)SvNVX(q), &exp);
+
+     while(ld != floorq(ld)) {
+          ld *= 2;
+          exp2 += 1;
+     }
+
+     buffer_size = ld < 0.0Q ? ld * -1.0Q : ld;
+     buffer_size = ceilq(logq(buffer_size + 1) / 2.30258509299404568401799145468436418Q);
+
+     Newxz(buffer, buffer_size + 5, char);
+
+     returned = quadmath_snprintf(buffer, (size_t)buffer_size + 5, "%.0Qf", ld);
+     if(returned < 0) croak("In Math::MPFI::_my mpfr_set_float128, encoding error in quadmath_snprintf function");
+     if(returned >= buffer_size + 5) croak("In In Math::MPFI::_my mpfr_set_float128, buffer given to quadmath_snprintf function was too small");
+     returned = mpfr_set_str(*p, buffer, 10, (mp_rnd_t)round);
+     Safefree(buffer);
+
+     if (exp2 > exp) mpfr_div_2ui(*p, *p, exp2 - exp, GMP_RNDN);
+     else mpfr_mul_2ui(*p, *p, exp - exp2, GMP_RNDN);
+     return newSViv(returned);
+#else
+     croak("Math::MPFI::_my_mpfr_set_float128 not implemented for this build of perl");
+#endif
 }
 
 /*******************************
@@ -1472,7 +1526,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1480,13 +1534,18 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
 
 #endif
 
@@ -1494,12 +1553,32 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return newSViv(0);
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_gte");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_gte");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_gte");
+#endif
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+       if(third == &PL_sv_yes) ret *= -1;
        if(ret >= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1569,7 +1648,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1577,13 +1656,18 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
 
 #endif
 
@@ -1591,12 +1675,33 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return newSViv(0);
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_lte");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_lte");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_lte");
+#endif
+
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+       if(third == &PL_sv_yes) ret *= -1;
        if(ret <= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1666,7 +1771,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1674,13 +1779,18 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
 
 #endif
 
@@ -1688,12 +1798,33 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return newSViv(0);
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_gt");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_gt");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_gt");
+#endif
+
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+       if(third == &PL_sv_yes) ret *= -1;
        if(ret > 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1763,7 +1894,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1771,13 +1902,18 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
 
 #endif
 
@@ -1785,12 +1921,32 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return newSViv(0);
    }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_lt");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_lt");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_lt");
+#endif
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
+       if(third == &PL_sv_yes) ret *= -1;
        if(ret < 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1852,19 +2008,23 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       mpfr_clear(t);
 
 #endif
 
@@ -1872,9 +2032,29 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return newSViv(0);
    }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_equiv");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_equiv");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_equiv");
+#endif
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
        if(ret == 0) return newSViv(1);
@@ -1897,6 +2077,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
+     int ret;
 
      New(1, mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("%s", "Failed to allocate memory in overload_add function");
@@ -1943,28 +2124,52 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_add_fr(*mpfi_t_obj, *a, t);
+       mpfr_clear(t);
 
 #endif
 
        return obj_ref;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_add");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_add");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_add");
+#endif
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
        return obj_ref;
@@ -1985,6 +2190,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
+     int ret;
 
      New(1, mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("%s", "Failed to allocate memory in overload_mul function");
@@ -2031,28 +2237,52 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_mul_fr(*mpfi_t_obj, *a, t);
+       mpfr_clear(t);
 
 #endif
 
        return obj_ref;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_mul");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_mul");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_mul");
+#endif
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
        return obj_ref;
@@ -2073,6 +2303,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
+     int ret;
 
      New(1, mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("%s", "Failed to allocate memory in overload_sub function");
@@ -2124,7 +2355,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2132,22 +2363,47 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+       else mpfi_sub_fr(*mpfi_t_obj, *a, t);
+       mpfr_clear(t);
 
 #endif
 
        return obj_ref;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_sub");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_sub");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_sub");
+#endif
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2169,6 +2425,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
+     int ret;
 
      New(1, mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("%s", "Failed to allocate memory in overload_div function");
@@ -2220,7 +2477,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2228,22 +2485,47 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+       else mpfi_div_fr(*mpfi_t_obj, *a, t);
+       mpfr_clear(t);
 
 #endif
 
        return obj_ref;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_div");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_div");
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_div");
+#endif
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2263,6 +2545,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
      mpfr_t t;
+     int ret;
 
      SvREFCNT_inc(a);
 
@@ -2303,30 +2586,57 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
 
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
+       mpfr_clear(t);
+
 #endif
 
        return a;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_add_eq");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
+           SvREFCNT_dec(a);
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_add_eq");
+         }
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
-         SvREFCNT_inc(a);
+         SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_add_eq");
        }
+#endif
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
        return a;
@@ -2346,6 +2656,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
 
 SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
      mpfr_t t;
+     int ret;
 
      SvREFCNT_inc(a);
 
@@ -2386,30 +2697,56 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
+       mpfr_clear(t);
 
 #endif
 
        return a;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_mul_eq");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
+           SvREFCNT_dec(a);
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_mul_eq");
+         }
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
-         SvREFCNT_inc(a);
+         SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_mul_eq");
        }
+#endif
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
        return a;
@@ -2429,6 +2766,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
 
 SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
      mpfr_t t;
+     int ret;
 
      SvREFCNT_inc(a);
 
@@ -2469,30 +2807,56 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
+       mpfr_clear(t);
 
 #endif
 
        return a;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_sub_eq");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
+           SvREFCNT_dec(a);
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_sub_eq");
+         }
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
-         SvREFCNT_inc(a);
+         SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_sub_eq");
        }
+#endif
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
        return a;
@@ -2512,6 +2876,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
 
 SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
      mpfr_t t;
+     int ret;
 
      SvREFCNT_inc(a);
 
@@ -2552,30 +2917,56 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       mpfr_set_float128(t, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
+       mpfr_clear(t);
 
 #endif
 
        return a;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_div_eq");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(t);
+         if(ret == 2) {
+           mpfr_set_nan(t);
+         }
+         else {
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
+           SvREFCNT_dec(a);
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_div_eq");
+         }
+       }
+#else
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
-         SvREFCNT_inc(a);
+         SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_div_eq");
        }
+#endif
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
        return a;
@@ -2753,6 +3144,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfi_t * mpfi_t_obj;
      mpfr_t tr;
      SV * obj_ref, * obj;
+     int ret;
 
      New(1, mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in overload_atan2 function");
@@ -2829,19 +3221,24 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(tr, REQUIRED_LDBL_MANT_DIG);
-       mpfr_set_ld(tr, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_ld(tr, SvNVX(b), GMP_RNDN);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
 
        mpfr_init2(tr, FLT128_MANT_DIG);
-       mpfr_set_float128(tr, SvNVX(b), __gmpfr_default_rounding_mode);
+       mpfr_set_float128(tr, SvNVX(b), GMP_RNDN);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
 
 #else
 /* NV_IS_FLOAT128 */
+       mpfr_init2(tr, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&tr, b, GMP_RNDN);
+       mpfi_set_fr(*mpfi_t_obj, tr);
+       mpfr_clear(tr);
+
 
 #endif
        if(third == &PL_sv_yes){
@@ -2855,9 +3252,32 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
        return obj_ref;
      }
 
-     if(SvPOK(b)) {
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_atan2");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         mpfr_init(tr);
+         if(ret == 2) {
+           mpfr_set_nan(tr);
+         }
+         else {
+           mpfr_set_inf(tr, ret);
+         }
+
+         mpfi_set_fr(*mpfi_t_obj, tr);
+         mpfr_clear(tr);
+       }
+       else {
+         if(mpfi_set_str(*mpfi_t_obj, SvPV_nolen(b), 10))
+           croak("Invalid string supplied to Math::MPFI::overload_atan2");
+       }
+#else
        if(mpfi_set_str(*mpfi_t_obj, SvPV_nolen(b), 10))
          croak("Invalid string supplied to Math::MPFI::overload_atan2");
+#endif
        if(third == &PL_sv_yes){
          mpfi_atan2(*mpfi_t_obj, *mpfi_t_obj, *a);
        }
@@ -2941,9 +3361,28 @@ int _SvPOK(pTHX_ SV * in) {
   if(SvPOK(in)) return 1;
   return 0;
 }
+
+int nok_pokflag(void) {
+  return nok_pok;
+}
+
+void clear_nok_pok(void){
+  nok_pok = 0;
+}
+
+void set_nok_pok(int x) {
+  nok_pok = x;
+}
 MODULE = Math::MPFI  PACKAGE = Math::MPFI
 
 PROTOTYPES: DISABLE
+
+
+int
+NOK_POK_val ()
+CODE:
+  RETVAL = NOK_POK_val (aTHX);
+OUTPUT:  RETVAL
 
 
 int
@@ -2965,6 +3404,12 @@ _has_longdouble ()
 int
 _ivsize_bits ()
 
+
+SV *
+_my_mpfr_set_float128 (p, q, round)
+	mpfr_t *	p
+	SV *	q
+	unsigned int	round
 
 SV *
 RMPFI_BOTH_ARE_EXACT (ret)
@@ -4667,4 +5112,40 @@ _SvPOK (in)
 CODE:
   RETVAL = _SvPOK (aTHX_ in);
 OUTPUT:  RETVAL
+
+int
+nok_pokflag ()
+
+
+void
+clear_nok_pok ()
+
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        clear_nok_pok();
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
+
+void
+set_nok_pok (x)
+	int	x
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        set_nok_pok(x);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
 
