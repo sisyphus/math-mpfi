@@ -243,9 +243,8 @@ sub new {
     if($type == _NOK_T) {
       if(@_ ) {die "Too many arguments supplied to new() - expected only one"}
        if(_has_longdouble()) {
-         my $t = Math::MPFR->new();
-         Math::MPFR::Rmpfr_set_ld($t, $arg1, Math::MPFR::Rmpfr_get_default_rounding_mode());
-         @ret = Rmpfi_init_set_fr($t);
+         $ret[0] = Math::MPFI->new();
+         Rmpfi_set_NV($ret[0], $arg1);
        }
        else {@ret = Rmpfi_init_set_d($arg1)}
       return $ret[0];
@@ -255,6 +254,12 @@ sub new {
       if(@_ > 1) {die "Too many arguments supplied to new() - expected no more than two"}
       $base = shift if @_;
       if($base < 0 || $base == 1 || $base > 36) {die "Invalid value for base"}
+      if(_SvNOK($arg1)) {
+        set_nok_pok(nok_pokflag() + 1);
+        if($Math::MPFI::NOK_POK) {
+          warn "Scalar passed to new() is both NV and PV. Using PV (string) value";
+        }
+      }
       @ret = Rmpfi_init_set_str($arg1, $base);
       if($ret[1]) {warn "string supplied to new() contained invalid characters"}
       return $ret[0];
@@ -337,12 +342,13 @@ sub overload_not_equiv {
     return !overload_equiv(@_);
 }
 
-sub overload_spaceship {
-    if(Rmpfi_nan_p($_[0]) || ($_[1] != $_[1])) {return undef}
-    if(overload_equiv(@_)) {return 0}
-    if(overload_gt(@_)) {return 1}
-    if(overload_lt(@_)) {return -1}
-}
+# Moved to XS
+# sub overload_spaceship {
+#    if(Rmpfi_nan_p($_[0]) || ($_[1] != $_[1])) {return undef}
+#    if(overload_equiv(@_)) {return 0}
+#    if(overload_gt(@_)) {return 1}
+#    if(overload_lt(@_)) {return -1}
+#}
 
 sub MPFI_VERSION_MAJOR {return _MPFI_VERSION_MAJOR()}
 sub MPFI_VERSION_MINOR {return _MPFI_VERSION_MINOR()}
