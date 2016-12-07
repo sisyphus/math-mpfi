@@ -87,6 +87,18 @@ int _has_longdouble(void) {
 #endif
 }
 
+int _nv_is_float128(void) {
+#if defined(NV_IS_FLOAT128)
+ return 1;
+#else
+ return 0;
+#endif
+}
+
+int _required_ldbl_mant_dig(void) {
+    return REQUIRED_LDBL_MANT_DIG;
+}
+
 int _ivsize_bits(void) {
    int ret = 0;
 #ifdef IVSIZE_BITS
@@ -377,7 +389,26 @@ int Rmpfi_set_fr (mpfi_t * rop, mpfr_t * op) {
 }
 
 int Rmpfi_set_str (pTHX_ mpfi_t * rop, SV * s, SV * base) {
+#ifdef _WIN32_BIZARRE_INFNAN
+       int ret;
+       mpfr_t t;
+
+       ret = _win32_infnanstring(SvPV_nolen(s));
+       if(ret) {
+         mpfr_init(t);
+         if(ret != 2) {
+           mpfr_set_inf(t, ret);
+         }
+         ret = mpfi_set_fr(*rop, t);
+         mpfr_clear(t);
+         return ret;
+       }
+       else {
+         return mpfi_set_str(*rop, (char *)SvPV_nolen(s),SvIV(base));
+       }
+#else
      return mpfi_set_str(*rop, SvPV_nolen(s), SvIV(base));
+#endif
 }
 
 void Rmpfi_swap (mpfi_t * x, mpfi_t * y) {
@@ -526,6 +557,7 @@ void Rmpfi_init_set_str(pTHX_ SV * q, SV * base) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
      int ret = (int)SvIV(base);
+     mpfr_t t;
 
      if(ret < 0 || ret > 36 || ret == 1) croak("2nd argument supplied to Rmpfi_init_set str is out of allowable range");
 
@@ -535,7 +567,25 @@ void Rmpfi_init_set_str(pTHX_ SV * q, SV * base) {
      obj = newSVrv(obj_ref, "Math::MPFI");
      sv_setiv(obj, INT2PTR(IV,mpfi_t_obj));
      SvREADONLY_on(obj);
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(q));
+       if(ret) {
+         mpfr_init(t);
+         if(ret != 2) {
+           mpfr_set_inf(t, ret);
+         }
+         ret = mpfi_init_set_fr(*mpfi_t_obj, t);
+         mpfr_clear(t);
+       }
+       else {
+         ret = mpfi_init_set_str(*mpfi_t_obj, (char *)SvPV_nolen(q),SvIV(base));
+       }
+#else
+
      ret = mpfi_init_set_str(*mpfi_t_obj, SvPV_nolen(q), ret);
+
+#endif
 
      ST(0) = sv_2mortal(obj_ref);
      ST(1) = sv_2mortal(newSViv(ret));
@@ -1470,6 +1520,123 @@ SV * mpfr_v(pTHX) {
 /*******************************
 Overloading
 *******************************/
+
+SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
+     mpfr_t t;
+     int ret = 0;
+
+     if(mpfi_nan_p(*a)) return &PL_sv_undef;
+
+#ifndef MATH_MPFI_NEED_LONG_LONG_INT
+     if(SvUOK(b)) {
+       ret = mpfi_cmp_ui(*a, SvUVX(b));
+       if(third == &PL_sv_yes) ret *= -1;
+       return newSViv(ret);
+     }
+
+     if(SvIOK(b)) {
+       ret = mpfi_cmp_si(*a, SvIVX(b));
+       if(third == &PL_sv_yes) ret *= -1;
+       return newSViv(ret);
+     }
+#else
+     if(SvUOK(b)) {
+       mpfr_init2(t, IVSIZE_BITS);
+       mpfr_set_uj(t, SvUVX(b), __gmpfr_default_rounding_mode);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
+       return newSViv(ret);
+     }
+
+     if(SvIOK(b)) {
+       mpfr_init2(t, IVSIZE_BITS);
+       mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
+       return newSViv(ret);
+     }
+
+#endif
+
+     if(SvNOK(b) && !SvPOK(b)) { /* do not use the NV if POK is set */
+       if(SvNVX(b) != SvNVX(b)) return &PL_sv_undef; /* NaN */
+
+#ifdef NV_IS_DOUBLE
+
+       ret = mpfi_cmp_d(*a, SvNVX(b));
+       if(third == &PL_sv_yes) ret *= -1;
+
+
+#elif defined(NV_IS_LONG_DOUBLE)
+
+       mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
+       mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
+
+#elif defined(MPFI_CAN_PASS_FLOAT128)
+
+       mpfr_init2(t, FLT128_MANT_DIG);
+       mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
+
+#else
+/* NV_IS_FLOAT128 */
+       mpfr_init2(t, FLT128_MANT_DIG);
+       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       ret = mpfi_cmp_fr(*a, t);
+       if(third == &PL_sv_yes) ret *= -1;
+       mpfr_clear(t);
+
+#endif
+
+       return newSViv(ret);
+     }
+
+     if(SvPOK(b)) { /* assign string with default precision */
+
+       NOK_POK_DUALVAR_CHECK , "Math::MPFI::overload_spaceship");}
+
+#ifdef _WIN32_BIZARRE_INFNAN
+       ret = _win32_infnanstring(SvPV_nolen(b));
+       if(ret) {
+         if(ret == 2) {
+           return &PL_sv_undef;
+         }
+         else {
+           mpfr_init(t);
+           mpfr_set_inf(t, ret);
+         }
+       }
+       else {
+         if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+           croak("%s", "Invalid string supplied to Math::MPFI::overload_spaceship");
+       }
+#else
+       if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
+         croak("%s", "Invalid string supplied to Math::MPFI::overload_spaceship");
+#endif
+       ret = mpfi_cmp_fr(*a, t);
+       mpfr_clear(t);
+       if(third == &PL_sv_yes) ret *= -1;
+       return newSViv(ret);
+     }
+
+     if(sv_isobject(b)) {
+       const char *h = HvNAME(SvSTASH(SvRV(b)));
+       if(strEQ(h, "Math::MPFI")) {
+         ret = mpfi_cmp(*a, *(INT2PTR(mpfi_t *, SvIVX(SvRV(b)))));
+         return newSViv(ret);
+       }
+     }
+
+     croak("%s", "Invalid argument supplied to Math::MPFI::overload_spaceship");
+}
 
 SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
      mpfr_t t;
@@ -3402,6 +3569,14 @@ _has_longdouble ()
 
 
 int
+_nv_is_float128 ()
+
+
+int
+_required_ldbl_mant_dig ()
+
+
+int
 _ivsize_bits ()
 
 
@@ -4778,6 +4953,15 @@ CODE:
   RETVAL = mpfr_v (aTHX);
 OUTPUT:  RETVAL
 
+
+SV *
+overload_spaceship (a, b, third)
+	mpfi_t *	a
+	SV *	b
+	SV *	third
+CODE:
+  RETVAL = overload_spaceship (aTHX_ a, b, third);
+OUTPUT:  RETVAL
 
 SV *
 overload_gte (a, b, third)
