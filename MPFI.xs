@@ -107,7 +107,7 @@ int _ivsize_bits(void) {
    return ret;
 }
 
-SV * _my_mpfr_set_float128(mpfr_t *p, SV * q, unsigned int round) { /* internal use only */
+SV * _my_mpfr_set_float128(pTHX_ mpfr_t *p, SV * q, unsigned int round) { /* internal use only */
 #if defined(NV_IS_FLOAT128)
      char * buffer;
      int exp, exp2 = 0;
@@ -1588,7 +1588,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1709,7 +1709,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1831,7 +1831,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -1954,7 +1954,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -2077,7 +2077,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        if(third == &PL_sv_yes) ret *= -1;
        mpfr_clear(t);
@@ -2305,7 +2305,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_add_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2418,7 +2418,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_mul_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2538,7 +2538,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2660,7 +2660,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
@@ -2768,7 +2768,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
 /* NV_IS_FLOAT128 */
 
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_add_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
@@ -2878,7 +2878,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_mul_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
@@ -2988,7 +2988,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_sub_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
@@ -3098,7 +3098,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        mpfi_div_fr(*(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), *(INT2PTR(mpfi_t *, SvIVX(SvRV(a)))), t);
        mpfr_clear(t);
 
@@ -3402,7 +3402,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(tr, FLT128_MANT_DIG);
-       _my_mpfr_set_float128(&tr, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &tr, b, GMP_RNDN);
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
 
@@ -3585,6 +3585,9 @@ _my_mpfr_set_float128 (p, q, round)
 	mpfr_t *	p
 	SV *	q
 	unsigned int	round
+CODE:
+  RETVAL = _my_mpfr_set_float128 (aTHX_ p, q, round);
+OUTPUT:  RETVAL
 
 SV *
 RMPFI_BOTH_ARE_EXACT (ret)
