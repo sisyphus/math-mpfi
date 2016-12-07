@@ -18,13 +18,16 @@ t/euler.t
 t/exact.t
 t/float.t
 t/get.t
+t/get_set_NV.t
 t/hypot.t
 t/init.t
+t/internal_float128.t
 t/interval.t
 t/io.t
 t/log.t
 t/mul.t
 t/new.t
+t/NOK_and_POK.t
 t/overload_atan2.t
 t/overload_add.t
 t/overload_bool.t
