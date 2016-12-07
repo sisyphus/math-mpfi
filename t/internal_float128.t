@@ -29,6 +29,12 @@ for(1.117e310, -1.1232e-320, (2 ** 200) + (2 ** 101), (2 ** 201) - (2 ** 100),
   Rmpfr_set_float128($c1, $_, MPFR_RNDN);
   Math::MPFI::_my_mpfr_set_float128($c2, $_, MPFR_RNDN);
 
+  Rmpfr_set_float128($c3, $_, MPFR_RNDN);
+  Math::MPFI::_my_mpfr_set_float128($c4, $_, MPFR_RNDN);
+
+  Rmpfr_set_float128($c5, $_, MPFR_RNDN);
+  Math::MPFI::_my_mpfr_set_float128($c6, $_, MPFR_RNDN);
+
   if($c1 != $c2) {
     $ok = 0;
     warn "\n \$c1: $c1\n \$c2: $c2\n";
