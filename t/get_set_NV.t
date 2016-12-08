@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Math::MPFI qw(:mpfi);
 
-print "1..2\n";
+print "1..4\n";
 
 Rmpfi_set_default_prec(113);
 
@@ -24,3 +24,20 @@ else {
   warn "\n $nv != ", Rmpfi_get_NV($fi), "\n";
   print "not ok 2\n";
 }
+
+Rmpfi_set_NV($fi, 999**(999**999));
+
+if(Rmpfi_inf_p($fi)) {print "ok 3\n"}
+else {
+  warn "\n expected 'inf'\n got $fi\n";
+  print "not ok 3\n";
+}
+
+$nv = Rmpfi_get_NV($fi);
+
+if($nv == 999**(999**999)) {print "ok 4\n"}
+else {
+  warn "\n expected 'inf'\n got $nv\n";
+  print "not ok 4\n";
+}
+
