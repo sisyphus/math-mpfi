@@ -1,5 +1,6 @@
 package Math::MPFI;
 use strict;
+use warnings;
 use Math::MPFR;
 
 require Exporter;
