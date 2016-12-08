@@ -534,7 +534,7 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
     $si = Rmpfi_set_ui ($rop, $ui);
     $si = Rmpfi_set_si ($rop, $si);
     $si = Rmpfi_set_d  ($rop, $double);
-    $si = Rmpfi_set_NV ($rop, $NV);
+    $si = Rmpfi_set_NV ($rop, $NV); # $NV is $Config{nvtype}
     $si = Rmpfi_set_z  ($rop, $z);  # $z is a Math::GMP
                                     # or Math::GMPz object.
     $si = Rmpfi_set_q  ($rop, $q);  # $q is a Math::GMPq object
@@ -669,7 +669,7 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
      Converts $op to a double, which is the center of $op rounded to the
      nearest double.
 
-    $NV = Rmpfi_get_NV ($op);
+    $NV = Rmpfi_get_NV ($op); # $NV is $Config{nvtype}
      Converts $op to an NV, which is the center of $op rounded to the
      nearest NV.
 
@@ -1198,7 +1198,7 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
 
     This program is free software; you may redistribute it and/or
     modify it under the same terms as Perl itself.
-    Copyright 2010, 2011, 2014 Sisyphus
+    Copyright 2010, 2011, 2014, 2016 Sisyphus
 
 =head1 AUTHOR
 
