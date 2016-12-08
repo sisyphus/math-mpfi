@@ -72,19 +72,7 @@ __float128 support
 
 Beginning perl-5.21.3 (or thereabouts) it is possible to build perl with
 nvtype of __float128 (if the architecture and compiler support that data type).
-The Makefile.PL should automatically turn on __float128 support if that's
-appropriate - whether it's appropriate depends also upon how both the mpfr
-library and have been built.
-If need be, you can build Math::MPFI by starting with:
-
-perl Makefile.PL F128=1
- which will force __float128 support, or:
-perl Makefile.PL F128=0
- which will force __float128 to be unsupported.
-
-I believe it to be both unnecessary and inadvisable to override the
-defaults - but if you do find that you need to override the default,
-please let me know. That you have found it necessary to override the
-default is something I probably ought to know about.
+The Makefile.PL should automatically detect and set the appropriate level of
+__float128 support.
 
 I am contactable by email at sisyphus at(@) cpan dot (.) org.
