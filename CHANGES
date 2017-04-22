@@ -1,4 +1,5 @@
 0.09
+ - Fix bungled NV_IS_FLOAT128 code in Rmpfi_set_NV, Rmpfi_get_NV and overload_equiv.
 
 0.08
  - Amend typedef of __float128 alignment (Windows only)
