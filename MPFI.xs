@@ -338,7 +338,7 @@ int Rmpfi_set_NV (pTHX_ mpfi_t * rop, SV * op) {
        mpfr_set_nan(t);
        mpfi_set_fr(*rop, t);
        mpfr_clear(t);
-       return newSViv(0);
+       return 0;
      }
 
      if(ld != 0.0Q && (ld / ld != 1)) {
@@ -346,7 +346,7 @@ int Rmpfi_set_NV (pTHX_ mpfi_t * rop, SV * op) {
        mpfr_set_inf(t, returned);
        mpfi_set_fr(*rop, t);
        mpfr_clear(t);
-       return newSViv(0);
+       return 0;
      }
 
      ld = frexpq((float128)SvNVX(op), &exp);
@@ -371,7 +371,7 @@ int Rmpfi_set_NV (pTHX_ mpfi_t * rop, SV * op) {
      else mpfr_mul_2ui(t, t, exp - exp2, GMP_RNDN);
      returned = mpfi_set_fr(*rop, t);
      mpfr_clear(t);
-     return newSViv(returned);
+     return returned;
 
 #endif
 }
@@ -865,7 +865,7 @@ SV * Rmpfi_get_NV(pTHX_ mpfi_t * op) {
      Newxz(out, 115, char);
      if(out == NULL) croak("Failed to allocate memory in Rmpfi_get_NV function");
 
-     mpfr_get_str(out, &exp, 2, 113, t, (mp_rnd_t)SvUV(round));
+     mpfr_get_str(out, &exp, 2, 113, t, 0);
 
      mpfr_clear(t);
 
@@ -2189,7 +2189,7 @@ SV * overload_equiv(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #else
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
-       my_mpfr_set_float128(&t, b, GMP_RNDN);
+       _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
 
