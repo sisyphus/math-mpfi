@@ -12,6 +12,8 @@ NV_IS_FLOAT128           : Automatically defined by Makefile.PL iff
                            $Config{nvtype} is __float128
                            If NV_IS_FLOAT128 is defined we include the
                            quadmath.h header.
+                           NOTE: mpfr_get/set_float128 are NOT necessarily
+                                 available when this symbol is defined.
 
 MPFR_WANT_FLOAT128       : Defined by Makefile.PL if $have_float128 is
                            set to a true value. $have_float128 can be set
