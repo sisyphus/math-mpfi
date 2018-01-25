@@ -3,6 +3,7 @@ Makefile.PL
 MANIFEST
 math_mpfi_include.h
 MPFI.pm
+MPFI.pod
 README
 MPFI.xs
 typemap
