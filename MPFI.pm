@@ -351,10 +351,10 @@ sub overload_not_equiv {
 #    if(overload_lt(@_)) {return -1}
 #}
 
-sub MPFI_VERSION_MAJOR {return _MPFI_VERSION_MAJOR()}
-sub MPFI_VERSION_MINOR {return _MPFI_VERSION_MINOR()}
-sub MPFI_VERSION_PATCHLEVEL {return _MPFI_VERSION_PATCHLEVEL()}
-sub MPFI_VERSION_STRING {return _MPFI_VERSION_STRING()}
+sub MPFI_VERSION_MAJOR      () {return _MPFI_VERSION_MAJOR()}
+sub MPFI_VERSION_MINOR      () {return _MPFI_VERSION_MINOR()}
+sub MPFI_VERSION_PATCHLEVEL () {return _MPFI_VERSION_PATCHLEVEL()}
+sub MPFI_VERSION_STRING     () {return _MPFI_VERSION_STRING()}
 
 1;
 
