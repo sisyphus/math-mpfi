@@ -1,4 +1,6 @@
 0.10
+ - Cater for the possibility that _Float128 is an unknown type. (This is done in
+   math_mpfi_include.h.)
  - Prototype subroutines listed in 'use subs()'.
  - Move POD out of MPFI.pm and into (newly created) MPFI.pod
 
