@@ -298,9 +298,11 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
                                       # $fr is a Math::MPFR object
      Sets $fr to a floating-point number picked up at random in $op,
      according to a uniform distribution.
-     The argument $state should be initialized with one of the
+     The argument $state should be initialized with one of the Math::MPFR,
      Math::GMPz, Math::GMPf or Math::GMPq random state initialization
-     functions - see the Math::GMPz/GMPq/GMPf documentation.
+     functions. (There are also options to then seed $state prior to calling
+     Rmpfi_urandom.)
+     See the Math::MPFR/GMPz/GMPq/GMPf documentation.
 
    ####################
 
@@ -839,7 +841,7 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
 
     This program is free software; you may redistribute it and/or
     modify it under the same terms as Perl itself.
-    Copyright 2010, 2011, 2014, 2016, 2018 Sisyphus
+    Copyright 2010, 2011, 2014, 2016, 2018-19 Sisyphus
 
 =head1 AUTHOR
 
