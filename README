@@ -12,7 +12,7 @@ GNU Lesser General Public License (GNU Lesser GPL).
 
 Because this module wraps the MPFI functions, it requires that the
 MPFI library (version 1.5 or later), the GMP library (version 4.2.0
-or later) and the MPFR library (version 2.3.0 or later) have been
+or later) and the MPFR library (version 3.0.0 or later) have been
 installed.
 
 For the GMP library see:
