@@ -10,7 +10,7 @@ require DynaLoader;
 our $VERSION = '0.10';
 #$VERSION = eval $VERSION;
 
-DynaLoader::bootstrap Math::MPFI $VERSION;
+Math::MPFI->DynaLoader::bootstrap($VERSION);
 
     use constant BOTH_ENDPOINTS_EXACT => 0;
     use constant LEFT_ENDPOINT_INEXACT => 1;
