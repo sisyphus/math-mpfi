@@ -828,11 +828,17 @@ Math::MPFI - perl interface to the MPFI (interval arithmetic) library.
      +, -, *, /, +=, -=, *=, /=,
      >, >=, <, <=, <=>,
      ==, !=,
-     "", =,
+     "",
      **, **=, sqrt
      atan2, cos, sin,
      log, exp,
-     abs, bool, !
+     abs, bool, !,
+     =
+
+    NOTE: Making use of the '=' overloading is not recommended unless
+          you understand its caveats. See 'perldoc overload' and
+          read it thoroughly, including the documentation regarding
+          'copy constructors'.
 
 ###############################################
 ###############################################
