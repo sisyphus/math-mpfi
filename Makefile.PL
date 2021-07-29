@@ -91,7 +91,7 @@ my %options = (
   AUTHOR => 'Sisyphus (sisyphus at (@) cpan dot (.) org)',
   LIBS => '-lmpfi -lmpfr -lgmp',
   VERSION_FROM => 'MPFI.pm',
-  PREREQ_PM => {'Math::MPFR' => '3.23'},
+  PREREQ_PM => {'Math::MPFR' => '3.23', 'Test::More' => '0.88'},
   LICENSE  => 'perl',
   DEFINE   => $defines,
   clean   => { FILES => 'save_child_setting.txt' },
