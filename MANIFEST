@@ -8,6 +8,7 @@ README
 MPFI.xs
 typemap
 ad_hoc/consistency.p
+t/_itsa.t
 t/aaa_compat.t
 t/aab_basic.t
 t/abs.t
