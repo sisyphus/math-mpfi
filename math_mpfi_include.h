@@ -128,6 +128,15 @@ typedef __float128 float128;
 #define __gmpfr_default_rounding_mode mpfr_get_default_rounding_mode()
 #endif
 
+#define SV_IS_IOK(x) \
+     SvIOK(x)
+
+#define SV_IS_POK(x) \
+     SvPOK(x)
+
+#define SV_IS_NOK(x) \
+     SvNOK(x)
+
 #define NOK_POK_DUALVAR_CHECK \
         if(SvNOK(b)) { \
          nok_pok++; \
