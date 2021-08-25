@@ -4,6 +4,7 @@
  - Prototype subroutines listed in 'use subs()'.
  - Move POD out of MPFI.pm and into (newly created) MPFI.pod
  - Small update to README - minimum required version of mpfr is now 3.0.0.
+ - Refactor IV/UV/NV/PV handling inside overload subs.
 
 0.09
  - Fix bungled NV_IS_FLOAT128 code in Rmpfi_set_NV, Rmpfi_get_NV and overload_equiv.
