@@ -36,6 +36,7 @@ t/overload_add.t
 t/overload_bool.t
 t/overload_cmp.t
 t/overload_mul.t
+t/overload_switch.t
 t/pod.t
 t/pi.t
 t/raise_2exp.t
