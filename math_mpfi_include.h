@@ -129,7 +129,7 @@ typedef __float128 float128;
  * use  SvTRUE_nomg_NN where possible, which is available    *
  * beginning with perl-5.18.0.                               *
  * Otherwise we continue using &PL_sv_yes as original        *
- *                    *
+ *                                                           *
  * See See https://github.com/sisyphus/math-decimal64/pull/1 */
 
 #if defined SvTRUE_nomg_NN
