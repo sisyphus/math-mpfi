@@ -1534,7 +1534,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) ret = mpfi_cmp_ui(*a, SvUVX(b));
        else ret = mpfi_cmp_si(*a, SvIVX(b));
 
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        return newSViv(ret);
      }
 #else
@@ -1544,7 +1544,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        else         mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
 
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
        return newSViv(ret);
      }
@@ -1576,7 +1576,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #endif
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        return newSViv(ret);
      }
 
@@ -1586,7 +1586,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
 
 
 #elif defined(NV_IS_LONG_DOUBLE)
@@ -1594,7 +1594,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
@@ -1602,7 +1602,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #else
@@ -1610,7 +1610,7 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #endif
@@ -1640,7 +1640,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) ret = mpfi_cmp_ui(*a, SvUVX(b));
        else         ret = mpfi_cmp_si(*a, SvIVX(b));
 
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret >= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1651,7 +1651,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        else         mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
 
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
        if(ret >= 0) return newSViv(1);
        return newSViv(0);
@@ -1684,7 +1684,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #endif
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret >= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1695,7 +1695,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
 
 
 #elif defined(NV_IS_LONG_DOUBLE)
@@ -1703,7 +1703,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
@@ -1711,7 +1711,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #else
@@ -1719,7 +1719,7 @@ SV * overload_gte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #endif
@@ -1751,7 +1751,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) ret = mpfi_cmp_ui(*a, SvUVX(b));
        else         ret = mpfi_cmp_si(*a, SvIVX(b));
 
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret <= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1762,7 +1762,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        else         mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
 
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
        if(ret <= 0) return newSViv(1);
        return newSViv(0);
@@ -1795,7 +1795,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret <= 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1806,14 +1806,14 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
 
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
@@ -1821,7 +1821,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #else
@@ -1829,7 +1829,7 @@ SV * overload_lte(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #endif
@@ -1861,7 +1861,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) ret = mpfi_cmp_ui(*a, SvUVX(b));
        else         ret = mpfi_cmp_si(*a, SvIVX(b));
 
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret > 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1872,7 +1872,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        else mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
 
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
        if(ret > 0) return newSViv(1);
        return newSViv(0);
@@ -1905,7 +1905,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret > 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1916,14 +1916,14 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
 
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
@@ -1931,7 +1931,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #else
@@ -1939,7 +1939,7 @@ SV * overload_gt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #endif
@@ -1971,7 +1971,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) ret = mpfi_cmp_ui(*a, SvUVX(b));
        else         ret = mpfi_cmp_si(*a, SvIVX(b));
 
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret < 0) return newSViv(1);
        return newSViv(0);
      }
@@ -1982,7 +1982,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        else  mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
 
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
        if(ret < 0) return newSViv(1);
        return newSViv(0);
@@ -2014,7 +2014,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #endif
        ret = mpfi_cmp_fr(*a, t);
        mpfr_clear(t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        if(ret < 0) return newSViv(1);
        return newSViv(0);
      }
@@ -2025,14 +2025,14 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifdef NV_IS_DOUBLE
 
        ret = mpfi_cmp_d(*a, SvNVX(b));
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
 
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #elif defined(MPFI_CAN_PASS_FLOAT128)
@@ -2040,7 +2040,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #else
@@ -2048,7 +2048,7 @@ SV * overload_lt(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
        ret = mpfi_cmp_fr(*a, t);
-       if(third == &PL_sv_yes) ret *= -1;
+       if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
 
 #endif
@@ -2394,11 +2394,11 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SV_IS_IOK(b)) {
        if(SvUOK(b)) {
-         if(third == &PL_sv_yes) mpfi_ui_sub(*mpfi_t_obj, SvUVX(b), *a);
+         if(SWITCH_ARGS) mpfi_ui_sub(*mpfi_t_obj, SvUVX(b), *a);
          else mpfi_sub_ui(*mpfi_t_obj, *a, SvUVX(b));
        }
        else {
-         if(third == &PL_sv_yes) mpfi_si_sub(*mpfi_t_obj, SvIVX(b), *a);
+         if(SWITCH_ARGS) mpfi_si_sub(*mpfi_t_obj, SvIVX(b), *a);
          else mpfi_sub_si(*mpfi_t_obj, *a, SvIVX(b));
        }
 
@@ -2409,12 +2409,12 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, IVSIZE_BITS);
        if(SvUOK(b)) {
          mpfr_set_uj(t, SvUVX(b), __gmpfr_default_rounding_mode);
-         if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+         if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
          else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        }
        else {
          mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
-         if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+         if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
          else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        }
        mpfr_clear(t);
@@ -2445,7 +2445,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_sub");
 #endif
-       if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
        return obj_ref;
@@ -2455,14 +2455,14 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 #ifdef NV_IS_DOUBLE
 
-       if(third == &PL_sv_yes) mpfi_d_sub(*mpfi_t_obj, SvNVX(b), *a);
+       if(SWITCH_ARGS) mpfi_d_sub(*mpfi_t_obj, SvNVX(b), *a);
        else mpfi_sub_d(*mpfi_t_obj, *a, SvNVX(b));
 
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2470,7 +2470,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2478,7 +2478,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_sub(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_sub(*mpfi_t_obj, t, *a);
        else mpfi_sub_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2515,11 +2515,11 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 #ifndef MATH_MPFI_NEED_LONG_LONG_INT
      if(SV_IS_IOK(b)) {
        if(SvUOK(b)) {
-         if(third == &PL_sv_yes) mpfi_ui_div(*mpfi_t_obj, SvUVX(b), *a);
+         if(SWITCH_ARGS) mpfi_ui_div(*mpfi_t_obj, SvUVX(b), *a);
          else mpfi_div_ui(*mpfi_t_obj, *a, SvUVX(b));
        }
        else {
-         if(third == &PL_sv_yes) mpfi_si_div(*mpfi_t_obj, SvIVX(b), *a);
+         if(SWITCH_ARGS) mpfi_si_div(*mpfi_t_obj, SvIVX(b), *a);
          else mpfi_div_si(*mpfi_t_obj, *a, SvIVX(b));
        }
        return obj_ref;
@@ -2530,12 +2530,12 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_init2(t, IVSIZE_BITS);
        if(SvUOK(b)) {
          mpfr_set_uj(t, SvUVX(b), __gmpfr_default_rounding_mode);
-         if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+         if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
          else mpfi_div_fr(*mpfi_t_obj, *a, t);
        }
        else {
          mpfr_set_sj(t, SvIVX(b), __gmpfr_default_rounding_mode);
-         if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+         if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
          else mpfi_div_fr(*mpfi_t_obj, *a, t);
        }
 
@@ -2568,7 +2568,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_div");
 #endif
-       if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
        return obj_ref;
@@ -2578,14 +2578,14 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 #ifdef NV_IS_DOUBLE
 
-       if(third == &PL_sv_yes) mpfi_d_div(*mpfi_t_obj, SvNVX(b), *a);
+       if(SWITCH_ARGS) mpfi_d_div(*mpfi_t_obj, SvNVX(b), *a);
        else mpfi_div_d(*mpfi_t_obj, *a, SvNVX(b));
 
 #elif defined(NV_IS_LONG_DOUBLE)
 
        mpfr_init2(t, REQUIRED_LDBL_MANT_DIG);
        mpfr_set_ld(t, SvNVX(b), GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2593,7 +2593,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
        mpfr_init2(t, FLT128_MANT_DIG);
        mpfr_set_float128(t, SvNVX(b), GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -2601,7 +2601,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
 /* NV_IS_FLOAT128 */
        mpfr_init2(t, FLT128_MANT_DIG);
        _my_mpfr_set_float128(aTHX_ &t, b, GMP_RNDN);
-       if(third == &PL_sv_yes) mpfi_fr_div(*mpfi_t_obj, t, *a);
+       if(SWITCH_ARGS) mpfi_fr_div(*mpfi_t_obj, t, *a);
        else mpfi_div_fr(*mpfi_t_obj, *a, t);
        mpfr_clear(t);
 
@@ -3202,7 +3202,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
        mpfi_set_fr(*mpfi_t_obj, tr);
        mpfr_clear(tr);
-       if(third == &PL_sv_yes){
+       if(SWITCH_ARGS){
          mpfi_atan2(*mpfi_t_obj, *mpfi_t_obj, *a);
        }
        else {
@@ -3217,7 +3217,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(SvUOK(b)) mpfi_set_ui(*mpfi_t_obj, SvUVX(b));
        else         mpfi_set_si(*mpfi_t_obj, SvIVX(b));
 
-       if(third == &PL_sv_yes){
+       if(SWITCH_ARGS){
          mpfi_atan2(*mpfi_t_obj, *mpfi_t_obj, *a);
        }
        else {
@@ -3255,7 +3255,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
        if(mpfi_set_str(*mpfi_t_obj, SvPV_nolen(b), 10))
          croak("Invalid string supplied to Math::MPFI::overload_atan2");
 #endif
-       if(third == &PL_sv_yes){
+       if(SWITCH_ARGS){
          mpfi_atan2(*mpfi_t_obj, *mpfi_t_obj, *a);
        }
        else {
@@ -3295,7 +3295,7 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
 
 
 #endif
-       if(third == &PL_sv_yes){
+       if(SWITCH_ARGS){
          mpfi_atan2(*mpfi_t_obj, *mpfi_t_obj, *a);
        }
        else {
