@@ -13,6 +13,7 @@
 
 
 #include "math_mpfi_include.h"
+#include "math_mpfi_unused.h"
 
 int nok_pok = 0; /* flag that is incremented whenever a scalar that is both *
                   * NOK and POK is passed to new or an overloaded operator  */
@@ -150,9 +151,7 @@ SV * _my_mpfr_set_float128(pTHX_ mpfr_t *p, SV * q, unsigned int round) { /* int
      else mpfr_mul_2ui(*p, *p, exp - exp2, GMP_RNDN);
      return newSViv(returned);
 #else
-     PERL_UNUSED_ARG(p);
-     PERL_UNUSED_ARG(q);
-     PERL_UNUSED_ARG(round);
+     PERL_UNUSED_ARG3(p, q, round);
      croak("Math::MPFI::_my_mpfr_set_float128 not implemented for this build of perl");
 #endif
 }
@@ -594,7 +593,7 @@ void Rmpfi_init_set_str(pTHX_ SV * q, SV * base) {
          ret = mpfi_init_set_str(*mpfi_t_obj, (char *)SvPV_nolen(q),SvIV(base));
        }
 #else
-     PERL_UNUSED_ARG(t);
+     PERL_UNUSED_VAR(t);
      ret = mpfi_init_set_str(*mpfi_t_obj, SvPV_nolen(q), ret);
 
 #endif
@@ -2322,7 +2321,7 @@ SV * overload_add(pTHX_ mpfi_t * a, SV * b, SV * third) {
            croak("%s", "Invalid string supplied to Math::MPFI::overload_add");
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_add");
 #endif
@@ -2438,7 +2437,7 @@ SV * overload_mul(pTHX_ mpfi_t * a, SV * b, SV * third) {
            croak("%s", "Invalid string supplied to Math::MPFI::overload_mul");
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_mul");
 #endif
@@ -2565,7 +2564,7 @@ SV * overload_sub(pTHX_ mpfi_t * a, SV * b, SV * third) {
            croak("%s", "Invalid string supplied to Math::MPFI::overload_sub");
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_sub");
 #endif
@@ -2700,7 +2699,7 @@ SV * overload_div(pTHX_ mpfi_t * a, SV * b, SV * third) {
            croak("%s", "Invalid string supplied to Math::MPFI::overload_div");
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode))
          croak("%s", "Invalid string supplied to Math::MPFI::overload_div");
 #endif
@@ -2815,7 +2814,7 @@ SV * overload_add_eq(pTHX_ SV * a, SV * b, SV * third) {
          }
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
          SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_add_eq");
@@ -2929,7 +2928,7 @@ SV * overload_mul_eq(pTHX_ SV * a, SV * b, SV * third) {
          }
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
          SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_mul_eq");
@@ -3042,7 +3041,7 @@ SV * overload_sub_eq(pTHX_ SV * a, SV * b, SV * third) {
          }
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
          SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_sub_eq");
@@ -3155,7 +3154,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
          }
        }
 #else
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(ret);
        if(mpfr_init_set_str(t, (char *)SvPV_nolen(b), 0, __gmpfr_default_rounding_mode)) {
          SvREFCNT_dec(a);
          croak("%s", "Invalid string supplied to Math::MPFI::overload_div_eq");
@@ -3217,8 +3216,7 @@ SV * overload_div_eq(pTHX_ SV * a, SV * b, SV * third) {
 SV * overload_sqrt(pTHX_ mpfi_t * p, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in overload_sqrt function");
@@ -3281,16 +3279,14 @@ void Rmpfi_urandom(mpfr_t * rop, mpfi_t * op, gmp_randstate_t * state) {
 }
 
 SV * overload_true(pTHX_ mpfi_t * op, SV * second, SV * third) {
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
      if(MPFI_IS_ZERO_PORTABLE(*op)) return newSViv(0);
      if(mpfi_nan_p(*op)) return newSViv(0);
      return newSViv(1);
 }
 
 SV * overload_not(pTHX_ mpfi_t * op, SV * second, SV * third) {
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
      if(MPFI_IS_ZERO_PORTABLE(*op)) return newSViv(1);
      if(mpfi_nan_p(*op)) return newSViv(1);
      return newSViv(0);
@@ -3299,8 +3295,7 @@ SV * overload_not(pTHX_ mpfi_t * op, SV * second, SV * third) {
 SV * overload_abs(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in Rmpfi_abs function");
@@ -3317,8 +3312,7 @@ SV * overload_abs(pTHX_ mpfi_t * op, SV * second, SV * third) {
 SV * overload_sin(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in Rmpfi_sin function");
@@ -3335,8 +3329,7 @@ SV * overload_sin(pTHX_ mpfi_t * op, SV * second, SV * third) {
 SV * overload_cos(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in Rmpfi_cos function");
@@ -3353,8 +3346,7 @@ SV * overload_cos(pTHX_ mpfi_t * op, SV * second, SV * third) {
 SV * overload_log(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in Rmpfi_log function");
@@ -3371,8 +3363,7 @@ SV * overload_log(pTHX_ mpfi_t * op, SV * second, SV * third) {
 SV * overload_exp(pTHX_ mpfi_t * op, SV * second, SV * third) {
      mpfi_t * mpfi_t_obj;
      SV * obj_ref, * obj;
-     PERL_UNUSED_ARG(second);
-     PERL_UNUSED_ARG(third);
+     PERL_UNUSED_ARG2(second, third);
 
      Newxz(mpfi_t_obj, 1, mpfi_t);
      if(mpfi_t_obj == NULL) croak("Failed to allocate memory in Rmpfi_exp function");
@@ -3462,8 +3453,8 @@ SV * overload_atan2(pTHX_ mpfi_t * a, SV * b, SV * third) {
            croak("Invalid string supplied to Math::MPFI::overload_atan2");
        }
 #else
-       PERL_UNUSED_ARG(tr);
-       PERL_UNUSED_ARG(ret);
+       PERL_UNUSED_VAR(tr);
+       PERL_UNUSED_VAR(ret);
        if(mpfi_set_str(*mpfi_t_obj, SvPV_nolen(b), 10))
          croak("Invalid string supplied to Math::MPFI::overload_atan2");
 #endif
