@@ -1564,8 +1564,9 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
      if(SV_IS_IOK(b)) {
        if(SvUOK(b)) ret = MPFI_CMP_UI(*a,SvUVX(b));
        else ret = MPFI_CMP_SI(*a,SvIVX(b));
-
        if(SWITCH_ARGS) ret *= -1;
+       if(ret < 0) ret = -1;
+       if(ret > 0) ret = 1;
        return newSViv(ret);
      }
 #else
@@ -1577,6 +1578,8 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        ret = MPFI_CMP_FR(*a,t);
        if(SWITCH_ARGS) ret *= -1;
        mpfr_clear(t);
+       if(ret < 0) ret = -1;
+       if(ret > 0) ret = 1;
        return newSViv(ret);
      }
 
@@ -1614,6 +1617,8 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        ret = MPFI_CMP_FR(*a,t);
        mpfr_clear(t);
        if(SWITCH_ARGS) ret *= -1;
+       if(ret < 0) ret = -1;
+       if(ret > 0) ret = 1;
        return newSViv(ret);
      }
 
@@ -1655,7 +1660,8 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        mpfr_clear(t);
 
 #endif
-
+       if(ret < 0) ret = -1;
+       if(ret > 0) ret = 1;
        return newSViv(ret);
      }
 
@@ -1663,6 +1669,8 @@ SV * overload_spaceship(pTHX_ mpfi_t * a, SV * b, SV * third) {
        const char *h = HvNAME(SvSTASH(SvRV(b)));
        if(strEQ(h, "Math::MPFI")) {
          ret = MPFI_CMP(*a, *(INT2PTR(mpfi_t *, SvIVX(SvRV(b)))));
+         if(ret < 0) ret = -1;
+         if(ret > 0) ret = 1;
          return newSViv(ret);
        }
      }
@@ -3696,7 +3704,7 @@ OUTPUT:  RETVAL
 void
 _Rmpfi_set_default_prec (p)
 	SV *	p
-        CODE:
+        PPCODE:
         _Rmpfi_set_default_prec(aTHX_ p);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -3711,7 +3719,7 @@ void
 Rmpfi_set_prec (op, prec)
 	mpfi_t *	op
 	SV *	prec
-        CODE:
+        PPCODE:
         Rmpfi_set_prec(aTHX_ op, prec);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -3761,14 +3769,14 @@ OUTPUT:  RETVAL
 void
 DESTROY (p)
 	mpfi_t *	p
-        CODE:
+        PPCODE:
         DESTROY(aTHX_ p);
         XSRETURN_EMPTY; /* return empty stack */
 
 void
 Rmpfi_clear (p)
 	mpfi_t *	p
-        CODE:
+        PPCODE:
         Rmpfi_clear(aTHX_ p);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -3831,139 +3839,139 @@ void
 Rmpfi_swap (x, y)
 	mpfi_t *	x
 	mpfi_t *	y
-        CODE:
+        PPCODE:
         Rmpfi_swap(x, y);
         XSRETURN_EMPTY; /* return empty stack */
 
 void
 Rmpfi_init_set (q)
 	mpfi_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_ui (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_ui(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_si (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_si(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_d (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_d(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_z (q)
 	mpz_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_z(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_q (q)
 	mpq_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_q(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_fr (q)
 	mpfr_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_fr(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_str (q, base)
 	SV *	q
 	SV *	base
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_str(aTHX_ q, base);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_nobless (q)
 	mpfi_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_ui_nobless (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_ui_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_si_nobless (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_si_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_d_nobless (q)
 	SV *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_d_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_z_nobless (q)
 	mpz_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_z_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_q_nobless (q)
 	mpq_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_q_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_fr_nobless (q)
 	mpfr_t *	q
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_fr_nobless(aTHX_ q);
-        return; /* assume stack size is correct */
+        return;
 
 void
 Rmpfi_init_set_str_nobless (q, base)
 	SV *	q
 	SV *	base
-        CODE:
+        PPCODE:
         PL_markstack_ptr++;
         Rmpfi_init_set_str_nobless(aTHX_ q, base);
-        return; /* assume stack size is correct */
+        return;
 
 int
 Rmpfi_diam_abs (rop, op)
@@ -3999,7 +4007,7 @@ void
 Rmpfi_alea (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-        CODE:
+        PPCODE:
         Rmpfi_alea(rop, op);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -4011,7 +4019,7 @@ void
 Rmpfi_get_fr (rop, op)
 	mpfr_t *	rop
 	mpfi_t *	op
-        CODE:
+        PPCODE:
         Rmpfi_get_fr(rop, op);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -4586,7 +4594,7 @@ OUTPUT:  RETVAL
 void
 Rmpfi_print_binary (op)
 	mpfi_t *	op
-        CODE:
+        PPCODE:
         Rmpfi_print_binary(op);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -4763,7 +4771,7 @@ Rmpfi_bisect (rop1, rop2, op)
 void
 RMPFI_ERROR (msg)
 	SV *	msg
-        CODE:
+        PPCODE:
         RMPFI_ERROR(aTHX_ msg);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -4774,14 +4782,14 @@ Rmpfi_is_error ()
 void
 Rmpfi_set_error (op)
 	int	op
-        CODE:
+        PPCODE:
         Rmpfi_set_error(op);
         XSRETURN_EMPTY; /* return empty stack */
 
 void
 Rmpfi_reset_error ()
 
-        CODE:
+        PPCODE:
         Rmpfi_reset_error();
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -5004,7 +5012,7 @@ Rmpfi_urandom (rop, op, state)
 	mpfr_t *	rop
 	mpfi_t *	op
 	gmp_randstate_t *	state
-        CODE:
+        PPCODE:
         Rmpfi_urandom(rop, op, state);
         XSRETURN_EMPTY; /* return empty stack */
 
@@ -5147,14 +5155,14 @@ nok_pokflag ()
 void
 clear_nok_pok ()
 
-        CODE:
+        PPCODE:
         clear_nok_pok();
         XSRETURN_EMPTY; /* return empty stack */
 
 void
 set_nok_pok (x)
 	int	x
-        CODE:
+        PPCODE:
         set_nok_pok(x);
         XSRETURN_EMPTY; /* return empty stack */
 
