@@ -163,7 +163,7 @@ $liblinks .= ' -lquadmath'
 my %options = (
   NAME => 'Math::MPFI',
   INC => '',
-  AUTHOR => 'Sisyphus (sisyphus at (@) cpan dot (.) org)',
+  AUTHOR => 'Sisyphus (sisyphus359 at (@) gmail dot (.) com)',
   LIBS => $liblinks,
   VERSION_FROM => 'MPFI.pm',
   PREREQ_PM => {'Math::MPFR' => '3.23', 'Test::More' => '0.88'},
